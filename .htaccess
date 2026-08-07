@@ -1,0 +1,30 @@
+# Config Apache untuk deployment di Hostinger (whole repo di public_html).
+
+# Pastikan index.php dipilih sebagai default page (bukan index.html prototipe)
+DirectoryIndex index.php
+
+RewriteEngine On
+
+# Semua request selain file/direktori nyata → index.php (front controller API)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Tidak ada directory listing
+Options -Indexes
+
+# Blok akses ke file/folder sensitif
+<FilesMatch "^\.(git|env|gitignore|htaccess)|composer\.(json|lock)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Kompresi
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE application/json application/javascript text/css text/html
+</IfModule>

@@ -1,0 +1,10 @@
+# Blok akses HTTP langsung ke folder frontend/.
+# Source code Next.js tidak dipakai di server PHP (di-deploy ke Vercel).
+
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order deny,allow
+  Deny from all
+</IfModule>
