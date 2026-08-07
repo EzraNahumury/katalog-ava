@@ -12,11 +12,28 @@ spl_autoload_register(function (string $class): void {
 });
 
 // --- Config ---
-$configFile = __DIR__ . '/config.php';
-if (!is_file($configFile)) {
+// Cari config.php di beberapa lokasi (urutan prioritas):
+// 1. ~/private/config.php   → PRODUCTION di Hostinger (di luar git deploy area,
+//                              aman dari wipe saat "Memindahkan")
+// 2. __DIR__/config.php     → LOCAL DEV (gitignored)
+$configPaths = [
+    dirname(__DIR__, 5) . '/private/config.php',   // ~/private/ (from public_html/backend/src)
+    dirname(__DIR__, 4) . '/private/config.php',   // fallback bila struktur folder berbeda
+    __DIR__ . '/config.php',                        // local dev fallback
+];
+
+$configFile = null;
+foreach ($configPaths as $p) {
+    if (is_file($p)) { $configFile = $p; break; }
+}
+
+if (!$configFile) {
     http_response_code(500);
     header('Content-Type: application/json');
-    echo json_encode(['error' => 'Server misconfigured: config.php missing']);
+    echo json_encode([
+        'error'   => 'Server misconfigured: config.php not found',
+        'tried'   => $configPaths,
+    ]);
     exit;
 }
 $config = require $configFile;

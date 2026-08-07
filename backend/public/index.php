@@ -14,6 +14,7 @@ use App\Controllers\AuthController;
 use App\Controllers\ProductController;
 use App\Controllers\CategoryController;
 use App\Controllers\UserController;
+use App\Controllers\UploadController;
 
 $router = new Router();
 
@@ -22,6 +23,7 @@ $router->post('/auth/login',            [AuthController::class,     'login']);
 $router->get ('/products',              [ProductController::class,  'index']);
 $router->get ('/products/{id}',         [ProductController::class,  'show']);
 $router->get ('/categories',            [CategoryController::class, 'index']);
+$router->get ('/uploads/{file}',        [UploadController::class,   'serve']);
 
 // Admin (butuh JWT)
 $router->post  ('/products',              [ProductController::class,  'store'],  true);

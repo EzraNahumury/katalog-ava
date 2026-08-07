@@ -28,8 +28,15 @@ return [
     ],
 
     // --- Upload ---
-    'upload_dir'      => __DIR__ . '/../uploads',          // path fisik
-    'upload_url_base' => 'https://api.katalogava.com/uploads', // URL publik
+    // upload_dir: path FISIK untuk simpan file gambar.
+    //   - PRODUCTION Hostinger: '/home/uXXXXXX/private/uploads' (di luar public_html)
+    //     agar tidak terhapus saat "Memindahkan" (git redeploy fresh-clone).
+    //   - LOCAL DEV: __DIR__ . '/../public/uploads' (di dalam backend/public/)
+    // upload_url_base: URL publik untuk akses gambar via HTTP.
+    //   Semua request /uploads/{file} akan di-serve oleh UploadController
+    //   (baca file dari upload_dir, stream dengan cache headers).
+    'upload_dir'      => __DIR__ . '/../public/uploads',
+    'upload_url_base' => 'https://katalogava.ayreslab.id/uploads',
     'upload_max_size' => 3 * 1024 * 1024,                  // 3 MB
     'upload_allowed_mime' => ['image/jpeg', 'image/png', 'image/webp'],
 
