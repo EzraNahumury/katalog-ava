@@ -17,8 +17,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AVA Sportivo — Katalog',
-  description: 'Perlengkapan Olahraga & Fisioterapi — Bandung, Indonesia',
+  title: 'Katalog Ava',
+  description: 'Perlengkapan Olahraga & Fisioterapi — Jogjakarta, Indonesia',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
