@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { Archivo_Black, Inter, JetBrains_Mono } from 'next/font/google';
+import { Space_Grotesk, Archivo_Black, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
+const space = Space_Grotesk({
   variable: '--font-body',
   subsets: ['latin'],
 });
@@ -17,15 +17,15 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Katalog Produk — Ava',
-  description: 'Perlengkapan Olahraga & Fisioterapi',
+  title: 'AVA Sportivo — Katalog',
+  description: 'Perlengkapan Olahraga & Fisioterapi — Bandung, Indonesia',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="id"
-      className={`${inter.variable} ${archivo.variable} ${jetbrains.variable}`}
+      className={`${space.variable} ${archivo.variable} ${jetbrains.variable}`}
     >
       <body>{children}</body>
     </html>
