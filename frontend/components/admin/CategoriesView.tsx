@@ -7,10 +7,13 @@ import {
   deleteCategory,
   type Category,
 } from '@/lib/api';
+import { useConfirm, useToast } from '../ui/UIProvider';
 
 type Props = { token: string; onUnauthorized: () => void };
 
 export default function CategoriesView({ token, onUnauthorized }: Props) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [items, setItems] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
@@ -44,30 +47,45 @@ export default function CategoriesView({ token, onUnauthorized }: Props) {
     try {
       await createCategory(token, n);
       setName('');
+      toast.success('Kategori ditambahkan', `"${n}" siap digunakan.`);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      toast.error('Gagal tambah kategori', msg);
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(c: Category) {
-    if (c.product_count > 0) {
-      if (
-        !confirm(
-          `Kategori "${c.name}" masih dipakai ${c.product_count} produk. Produk tidak akan terhapus tapi kategorinya jadi kosong. Lanjut?`
-        )
-      )
-        return;
-    } else if (!confirm(`Hapus kategori "${c.name}"?`)) {
-      return;
-    }
+    const ok = c.product_count > 0
+      ? await confirm({
+          title: 'Kategori sedang dipakai',
+          message: (
+            <>
+              Kategori <b>&quot;{c.name}&quot;</b> masih dipakai oleh <b>{c.product_count} produk</b>. Produk tidak akan terhapus, tapi kategorinya akan jadi kosong. Lanjutkan?
+            </>
+          ),
+          confirmText: 'Ya, Hapus',
+        })
+      : await confirm({
+          title: 'Hapus kategori?',
+          message: (
+            <>
+              Kategori <b>&quot;{c.name}&quot;</b> akan dihapus permanen.
+            </>
+          ),
+          confirmText: 'Ya, Hapus',
+        });
+
+    if (!ok) return;
     try {
       await deleteCategory(token, c.id);
+      toast.success('Kategori dihapus', `"${c.name}" berhasil dihapus.`);
       await load();
     } catch (e) {
-      alert('Gagal hapus: ' + (e instanceof Error ? e.message : String(e)));
+      toast.error('Gagal hapus kategori', e instanceof Error ? e.message : String(e));
     }
   }
 

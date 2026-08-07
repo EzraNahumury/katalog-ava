@@ -7,10 +7,13 @@ import {
   deleteUser,
   type AdminUser,
 } from '@/lib/api';
+import { useConfirm, useToast } from '../ui/UIProvider';
 
 type Props = { token: string; onUnauthorized: () => void };
 
 export default function UsersView({ token, onUnauthorized }: Props) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [items, setItems] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
@@ -49,21 +52,34 @@ export default function UsersView({ token, onUnauthorized }: Props) {
       await createUser(token, u, password);
       setUsername('');
       setPassword('');
+      toast.success('Akun ditambahkan', `${u} sekarang bisa login sebagai admin.`);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      toast.error('Gagal tambah akun', msg);
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(u: AdminUser) {
-    if (!confirm(`Hapus akun "${u.username}"?`)) return;
+    const ok = await confirm({
+      title: 'Hapus akun admin?',
+      message: (
+        <>
+          Akun <b>&quot;{u.username}&quot;</b> tidak akan bisa login lagi setelah ini.
+        </>
+      ),
+      confirmText: 'Ya, Hapus',
+    });
+    if (!ok) return;
     try {
       await deleteUser(token, u.id);
+      toast.success('Akun dihapus', `${u.username} berhasil dihapus.`);
       await load();
     } catch (e) {
-      alert('Gagal hapus: ' + (e instanceof Error ? e.message : String(e)));
+      toast.error('Gagal hapus akun', e instanceof Error ? e.message : String(e));
     }
   }
 

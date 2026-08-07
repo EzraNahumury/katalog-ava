@@ -10,10 +10,13 @@ import {
 } from '@/lib/api';
 import ProductCard from '../ProductCard';
 import ProductForm from './ProductForm';
+import { useConfirm, useToast } from '../ui/UIProvider';
 
 type Props = { token: string; onUnauthorized: () => void };
 
 export default function ProductsView({ token, onUnauthorized }: Props) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,12 +71,22 @@ export default function ProductsView({ token, onUnauthorized }: Props) {
   }, [products, search, activeCat]);
 
   async function handleDelete(p: Product) {
-    if (!confirm(`Hapus produk "${p.name}"?`)) return;
+    const ok = await confirm({
+      title: 'Hapus produk?',
+      message: (
+        <>
+          Produk <b>&quot;{p.name}&quot;</b> akan dihapus permanen beserta semua data harga dan gambarnya.
+        </>
+      ),
+      confirmText: 'Ya, Hapus',
+    });
+    if (!ok) return;
     try {
       await deleteProduct(token, p.id);
+      toast.success('Produk dihapus', `"${p.name}" berhasil dihapus dari katalog.`);
       await loadAll();
     } catch (e) {
-      alert('Gagal hapus: ' + (e instanceof Error ? e.message : String(e)));
+      toast.error('Gagal hapus produk', e instanceof Error ? e.message : String(e));
     }
   }
 

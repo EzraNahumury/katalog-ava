@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import LoginForm from '@/components/admin/LoginForm';
 import AdminDashboard from '@/components/admin/AdminDashboard';
+import { UIProvider } from '@/components/ui/UIProvider';
 import { getToken, clearToken } from '@/lib/auth';
 
 export default function AdminPage() {
@@ -16,17 +17,19 @@ export default function AdminPage() {
 
   if (!ready) return null;
 
-  if (!token) {
-    return <LoginForm onLoggedIn={() => setTokenState(getToken())} />;
-  }
-
   return (
-    <AdminDashboard
-      token={token}
-      onLogout={() => {
-        clearToken();
-        setTokenState(null);
-      }}
-    />
+    <UIProvider>
+      {!token ? (
+        <LoginForm onLoggedIn={() => setTokenState(getToken())} />
+      ) : (
+        <AdminDashboard
+          token={token}
+          onLogout={() => {
+            clearToken();
+            setTokenState(null);
+          }}
+        />
+      )}
+    </UIProvider>
   );
 }
