@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Katalog Produk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --navy:#10182B;
+  --navy-2:#1B2740;
+  --bg:#F5F6F2;
+  --card:#FFFFFF;
+  --ink:#10182B;
+  --muted:#6B7280;
+  --line:#E4E3DB;
+  --accent:#FF5A1F;
+  --accent-ink:#7A2A0A;
+  --teal:#0F9E8C;
+  --teal-bg:#E6F7F4;
+  --amber-bg:#FFF1E8;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(16,24,43,.04), 0 8px 24px rgba(16,24,43,.06);
+  --font-display:'Archivo Black', Impact, sans-serif;
+  --font-body:'Inter', -apple-system, sans-serif;
+  --font-mono:'JetBrains Mono', 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);}
+img{max-width:100%;display:block;}
+button{font-family:inherit;cursor:pointer;}
+
+/* ---- Topbar ---- */
+.topbar{position:sticky;top:0;z-index:40;background:var(--navy);color:#fff;box-shadow:0 4px 20px rgba(16,24,43,.15);}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 28px 12px;max-width:1400px;margin:0 auto;}
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-mark{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:22px;color:#fff;flex:none;}
+.brand-text h1{font-family:var(--font-display);font-size:20px;letter-spacing:.5px;margin:0;line-height:1.1;}
+.brand-text p{margin:2px 0 0;font-size:12.5px;color:#B9C0D4;font-weight:500;}
+.topbar-actions{display:flex;align-items:center;gap:10px;position:relative;}
+.btn{border:none;border-radius:9px;padding:10px 16px;font-size:13.5px;font-weight:600;transition:.15s;}
+.btn-edit{background:var(--accent);color:#fff;}
+.btn-edit:hover{background:#e64f16;}
+.btn-edit.active{background:var(--teal);}
+.btn-ghost{background:rgba(255,255,255,.1);color:#fff;padding:10px 13px;font-size:16px;}
+.btn-ghost:hover{background:rgba(255,255,255,.18);}
+.menu-wrap{position:relative;}
+.menu-dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#fff;color:var(--ink);border-radius:12px;box-shadow:var(--shadow);padding:6px;min-width:220px;display:flex;flex-direction:column;border:1px solid var(--line);}
+.menu-dropdown button, .menu-dropdown label{all:unset;display:block;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;box-sizing:border-box;}
+.menu-dropdown button:hover, .menu-dropdown label:hover{background:var(--bg);}
+.menu-dropdown .danger{color:#C0392B;}
+.hidden{display:none !important;}
+
+.searchbar{max-width:1400px;margin:0 auto;padding:0 28px 14px;display:flex;align-items:center;gap:14px;}
+.searchbar input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;padding:11px 16px;border-radius:10px;font-size:14px;}
+.searchbar input::placeholder{color:#8791AA;}
+.searchbar input:focus{outline:none;border-color:var(--accent);background:rgba(255,255,255,.13);}
+.result-count{font-size:12.5px;color:#8791AA;white-space:nowrap;font-family:var(--font-mono);}
+
+.cat-nav{max-width:1400px;margin:0 auto;display:flex;gap:8px;padding:0 28px 16px;overflow-x:auto;}
+.cat-chip{flex:none;background:rgba(255,255,255,.08);color:#D7DBE8;border:1px solid rgba(255,255,255,.12);padding:8px 15px;border-radius:20px;font-size:13px;font-weight:600;white-space:nowrap;}
+.cat-chip .n{opacity:.6;font-family:var(--font-mono);font-weight:400;margin-left:4px;}
+.cat-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+.edit-banner{background:var(--amber-bg);color:var(--accent-ink);text-align:center;padding:10px 20px;font-size:13.5px;font-weight:600;border-bottom:1px solid #FFD9BF;}
+
+/* ---- Grid & Cards ---- */
+.grid{max-width:1400px;margin:0 auto;padding:26px 28px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px;}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line);position:relative;}
+.card-img-wrap{position:relative;width:100%;aspect-ratio:1/1;background:linear-gradient(135deg,#EEEEE8,#E4E4DC);overflow:hidden;cursor:zoom-in;}
+.card-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .35s;}
+.card-img-wrap:hover img{transform:scale(1.05);}
+.no-img{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#A9AA9E;gap:6px;}
+.no-img svg{width:46px;height:46px;opacity:.5;}
+.no-img span{font-size:12px;font-weight:600;}
+.img-edit-btn{position:absolute;inset:0;background:rgba(16,24,43,.55);color:#fff;border:none;font-size:13px;font-weight:700;opacity:0;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.card-img-wrap:hover .img-edit-btn{opacity:1;}
+.cat-badge{position:absolute;top:10px;left:10px;background:rgba(16,24,43,.75);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.4px;padding:5px 10px;border-radius:6px;text-transform:uppercase;}
+.cat-badge-select{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.3px;padding:5px 8px;border-radius:6px;text-transform:uppercase;border:none;max-width:calc(100% - 40px);z-index:6;}
+.cat-badge-select:focus{outline:2px solid #fff;}
+.del-btn{position:absolute;top:8px;right:8px;background:#C0392B;color:#fff;border:none;width:26px;height:26px;border-radius:7px;font-size:14px;line-height:1;z-index:5;}
+
+.card-body{padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;flex:1;}
+.card-name{font-family:var(--font-display);font-size:15px;line-height:1.3;letter-spacing:.2px;text-transform:uppercase;min-height:20px;}
+.card-name[contenteditable="true"], .card-variant[contenteditable="true"]{outline:2px dashed var(--accent);outline-offset:3px;border-radius:4px;padding:2px 4px;}
+.card-variant{font-size:12px;color:var(--muted);line-height:1.5;min-height:14px;}
+.card-variant b{color:var(--ink);font-weight:600;}
+
+.price-block{background:var(--bg);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;margin-top:auto;}
+.price-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;}
+.price-row .label{color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px;}
+.price-row .moq{font-family:var(--font-mono);font-size:10.5px;background:var(--teal-bg);color:var(--teal);padding:1px 6px;border-radius:5px;font-weight:600;}
+.price-row .val{font-family:var(--font-mono);font-weight:700;font-size:13.5px;}
+.price-row .val[contenteditable="true"]{outline:2px dashed var(--accent);outline-offset:2px;border-radius:4px;padding:1px 4px;min-width:20px;display:inline-block;}
+.ladder{display:flex;align-items:flex-end;gap:3px;height:26px;margin-top:2px;}
+.ladder-bar{flex:1;background:var(--accent);border-radius:3px 3px 0 0;opacity:.35;}
+.ladder-bar.min{opacity:1;}
+.retail-price{font-size:17px;font-weight:800;font-family:var(--font-mono);color:var(--ink);}
+.retail-price[contenteditable="true"]{outline:2px dashed var(--accent);outline-offset:2px;border-radius:4px;padding:1px 4px;min-width:20px;display:inline-block;}
+.bandrol{font-size:11.5px;color:var(--muted);text-decoration:line-through;font-family:var(--font-mono);}
+.add-tier-btn{font-size:11px;font-weight:700;color:var(--teal);background:var(--teal-bg);border:none;border-radius:6px;padding:5px 8px;align-self:flex-start;}
+.remove-tier{background:none;border:none;color:#C0392B;font-size:13px;padding:0 2px;}
+
+/* Add product card */
+.add-card{border:2px dashed #C7C7BC;background:transparent;box-shadow:none;display:flex;align-items:center;justify-content:center;min-height:320px;color:var(--muted);font-weight:700;font-size:14px;flex-direction:column;gap:8px;}
+.add-card:hover{border-color:var(--accent);color:var(--accent);}
+
+.empty-state{text-align:center;color:var(--muted);padding:60px 20px;font-size:15px;}
+
+.footer{max-width:1400px;margin:0 auto;padding:20px 28px 50px;color:var(--muted);font-size:12px;text-align:center;}
+
+.lightbox{position:fixed;inset:0;background:rgba(16,24,43,.92);z-index:100;display:flex;align-items:center;justify-content:center;padding:40px;}
+.lightbox img{max-width:100%;max-height:100%;border-radius:8px;}
+.lightbox-close{position:absolute;top:20px;right:26px;background:none;border:none;color:#fff;font-size:26px;}
+
+@media (max-width:640px){
+  .topbar-inner{padding:14px 16px 10px;}
+  .searchbar{padding:0 16px 12px;}
+  .cat-nav{padding:0 16px 14px;}
+  .grid{padding:18px 16px 30px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+  .brand-text p{display:none;}
+  .card-name{font-size:13px;}
+}
+@media print{
+  .topbar,.edit-banner,.footer,.del-btn,.img-edit-btn,.add-card{display:none !important;}
+  body{background:#fff;}
+  .grid{grid-template-columns:repeat(3,1fr);}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">K</span>
+      <div class="brand-text">
+        <h1>KATALOG PRODUK</h1>
+        <p>Perlengkapan Olahraga &amp; Fisioterapi</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="editToggle" class="btn btn-edit">✎ Mode Edit</button>
+      <div class="menu-wrap">
+        <button id="menuToggle" class="btn btn-ghost">⋮</button>
+        <div id="menuDropdown" class="menu-dropdown hidden">
+          <button id="addProductBtn">+ Tambah Produk</button>
+          <button id="exportBtn">⭳ Export Data (JSON)</button>
+          <label class="menu-file">⭱ Import Data (JSON)
+            <input type="file" id="importFile" accept="application/json" hidden>
+          </label>
+          <button id="printBtn">🖶 Cetak / PDF</button>
+          <button id="resetBtn" class="danger">↺ Reset ke Data Awal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="searchbar">
+    <input type="text" id="searchInput" placeholder="Cari produk... (nama, kategori, varian)">
+    <span class="result-count" id="resultCount"></span>
+  </div>
+  <nav class="cat-nav" id="catNav"></nav>
+</header>
+
+<div class="edit-banner hidden" id="editBanner">
+  Mode Edit aktif — klik teks untuk mengubah, klik gambar untuk mengganti. Perubahan tersimpan otomatis di browser ini.
+</div>
+
+<main id="grid" class="grid"></main>
+
+<div id="emptyState" class="empty-state hidden">Tidak ada produk yang cocok dengan pencarian.</div>
+
+<footer class="footer">
+  <p>Katalog ini disimpan di perangkat Anda (browser). Gunakan <b>Export Data</b> secara berkala untuk mencadangkan perubahan.</p>
+</footer>
+
+<div id="lightbox" class="lightbox hidden">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<input type="file" id="imageFileInput" accept="image/*" hidden>
+
+<script id="productData" type="application/json">[{"id": 1, "category": "FISIO", "name": "FINGERTAPE", "variants": "BIRU MUDA, BIRU TUA, CREAM, HIJAU MUDA, HITAM, KUNING, MERAH, ORANGE, PINK, PUTIH, UNGU", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 14000.0, "harga_grosir": 10000.0, "diskon": 0.2857142857}, {"moq": 12.0, "harga_bandrol": null, "harga_retail": 14000.0, "harga_grosir": 8000.0, "diskon": 0.4285714286}], "images": ["image13.jpg"]}, {"id": 2, "category": "FISIO", "name": "KINESIO", "variants": "BIRU MUDA, BIRU TUA, CREAM, COKLAT TUA, HIJAU MUDA,HIJAU TUA, HITAM, KUNING, MERAH, ORANGE, PINK, PUTIH, UNGU", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 25000.0, "harga_grosir": 20000.0, "diskon": 0.2}, {"moq": 12.0, "harga_bandrol": null, "harga_retail": 25000.0, "harga_grosir": 18000.0, "diskon": 0.28}], "images": ["image1.jpg"]}, {"id": 3, "category": "FISIO", "name": "WRISTAPE", "variants": "HITAM, BIRU, MERAH PUTIH", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 30000.0, "harga_grosir": 25000.0, "diskon": 0.1666666667}, {"moq": 12.0, "harga_bandrol": null, "harga_retail": 30000.0, "harga_grosir": 23000.0, "diskon": 0.2333333333}], "images": ["image5.jpg"]}, {"id": 4, "category": "FISIO", "name": "SADDLE SHOES", "variants": "PUTIH, HITAM, COKLAT, MERAH", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 20000.0, "harga_grosir": 17500.0, "diskon": 0.125}, {"moq": 12.0, "harga_bandrol": null, "harga_retail": 20000.0, "harga_grosir": 15000.0, "diskon": 0.25}], "images": ["image19.png"]}, {"id": 5, "category": "FISIO", "name": "FOAMTAPE", "variants": "CREAM", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 23000.0, "harga_grosir": 18000.0, "diskon": 0.2173913043}], "images": ["image41.png"]}, {"id": 6, "category": "AYRES", "name": "KAOS KAKI PENDEK AQUILA", "variants": "ABU, BIRU, HIJAU, HITAM, KUNING, MERAH, NAVY, ORANGE, PUTIH", "bandrol": 49000.0, "tiers": [{"moq": 12.0, "harga_bandrol": 49000.0, "harga_retail": 34300.0, "harga_grosir": 24255.0, "diskon": 0.2928571429}], "images": ["image67.png"]}, {"id": 7, "category": "AYRES", "name": "KAOS KAKI PENDEK AQUILA MOTIF", "variants": "ABU, BIRU, MERAH, HITAM, PUTIH", "bandrol": 49800.0, "tiers": [{"moq": 12.0, "harga_bandrol": 49800.0, "harga_retail": 49800.0, "harga_grosir": 15000.0, "diskon": 0.6987951807}], "images": ["image37.png"]}, {"id": 8, "category": "AYRES", "name": "KAOS KAKI PENDEK VIPERX", "variants": "ABU, BIRU MUDA, HIJAU, HITAM, KUNING, MERAH, NAVY, PUTIH", "bandrol": 49000.0, "tiers": [{"moq": 12.0, "harga_bandrol": 49000.0, "harga_retail": 27000.0, "harga_grosir": 15000.0, "diskon": 0.4444444444}], "images": ["image25.png"]}, {"id": 9, "category": "AYRES", "name": "KAOS KAKI PANJANG AQUILA", "variants": "ABU, BIRU, HIJAU, HITAM,KUNING, MRAH, NAVY, ORANGE, PUTIH", "bandrol": 38000.0, "tiers": [{"moq": 12.0, "harga_bandrol": 38000.0, "harga_retail": 34200.0, "harga_grosir": 24700.0, "diskon": 0.2777777778}], "images": ["image35.png"]}, {"id": 10, "category": "AYRES", "name": "KAOS KAKI PANJANG AQUILA POLOS", "variants": "ABU, BIRU, HIJAU, HITAM,KUNING, MRAH, NAVY, PUTIH", "bandrol": 38000.0, "tiers": [{"moq": 12.0, "harga_bandrol": 38000.0, "harga_retail": 34200.0, "harga_grosir": 24700.0, "diskon": 0.2777777778}], "images": []}, {"id": 11, "category": "AYRES", "name": "BOLA AYRES LEGIA 2.0", "variants": "SIZE 4 DAN SIZE 5", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 152670.0, "harga_grosir": 106869.0, "diskon": 0.3}], "images": ["image88.png"]}, {"id": 12, "category": "AYRES", "name": "BOLA AYRES PARADOX", "variants": "SIZE 4 DAN SIZE 5", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 133140.0, "harga_grosir": 93198.0, "diskon": 0.3}], "images": ["image59.png", "image55.png"]}, {"id": 13, "category": "AYRES", "name": "ELBOW PAD SCUDO", "variants": "HITAM DAN PUTIH", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 115000.0, "harga_grosir": 103500.0, "diskon": 0.1}], "images": []}, {"id": 14, "category": "AYRES", "name": "KNEEPAD SCUDO", "variants": "HITAM DAN  PUTIH", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 125000.0, "harga_grosir": 112500.0, "diskon": 0.1}], "images": ["image75.png"]}, {"id": 15, "category": "AYRES", "name": "AYRES CLEANSER", "variants": "100ml", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 32000.0, "harga_grosir": 28800.0, "diskon": 0.1}], "images": ["image64.png"]}, {"id": 16, "category": "AYRES", "name": "AYRES GLUE", "variants": "60ml", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 76500.0, "harga_grosir": 68850.0, "diskon": 0.1}], "images": ["image9.png"]}, {"id": 17, "category": "AYRES", "name": "AYRES PARFUM", "variants": "60ml", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 25000.0, "harga_grosir": 22500.0, "diskon": 0.1}], "images": ["image6.png"]}, {"id": 18, "category": "AYRES", "name": "LEGBAND", "variants": "HITAM DAN PUTIH", "bandrol": 54000.0, "tiers": [{"moq": 12.0, "harga_bandrol": 54000.0, "harga_retail": 48600.0, "harga_grosir": 40500.0, "diskon": 0.1666666667}, {"moq": 24.0, "harga_bandrol": null, "harga_retail": 48600.0, "harga_grosir": 37800.0, "diskon": 0.2222222222}, {"moq": 50.0, "harga_bandrol": null, "harga_retail": 48600.0, "harga_grosir": 37800.0, "diskon": 0.2222222222}], "images": ["image117.png", "image31.png"]}, {"id": 19, "category": "AYRES", "name": "KAOS KAKI SAMBUNG AQUILA POLOS", "variants": "", "bandrol": 28900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 28900.0, "harga_retail": 27000.0, "harga_grosir": 15000.0, "diskon": 0.4444444444}], "images": []}, {"id": 20, "category": "AYRES", "name": "ANKLE CREAM", "variants": "", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 30000.0, "harga_grosir": 25000.0, "diskon": 0.1666666667}], "images": ["image20.png"]}, {"id": 21, "category": "AOLIKES", "name": "ELBOW GYM", "variants": "SIZE M, L", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 55000.0, "harga_grosir": 50000.0, "diskon": 0.09090909091}], "images": ["image4.png"]}, {"id": 22, "category": "AOLIKES", "name": "KNEE GYM", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 57000.0, "harga_grosir": 50000.0, "diskon": 0.1228070175}], "images": ["image27.png"]}, {"id": 23, "category": "AOLIKES", "name": "KNEEPAD FUTSAL", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 68000.0, "harga_grosir": 60000.0, "diskon": 0.1176470588}, {"moq": 12.0, "harga_bandrol": null, "harga_retail": 68000.0, "harga_grosir": 55000.0, "diskon": null}], "images": ["image38.png"]}, {"id": 24, "category": "AOLIKES", "name": "KNEEPAD VOLLY", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 60000.0, "harga_grosir": 55000.0, "diskon": 0.08333333333}], "images": ["image24.png", "image18.jpg"]}, {"id": 25, "category": "AOLIKES", "name": "PERGELANGAN KAKI 70CM", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 20000.0, "harga_grosir": 17000.0, "diskon": 0.15}], "images": []}, {"id": 26, "category": "AOLIKES", "name": "PERGELANGAN TANGAN CREAM", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 15000.0, "harga_grosir": 12000.0, "diskon": 0.2}], "images": ["image29.png"]}, {"id": 27, "category": "AOLIKES", "name": "RESISTANCE", "variants": "ISI 6", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 65000.0, "harga_grosir": 55000.0, "diskon": 0.1538461538}], "images": ["image83.png"]}, {"id": 28, "category": "AOLIKES", "name": "SARUNG DEKER", "variants": "HITAM DAN PUTIH", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 30000.0, "harga_grosir": 25000.0, "diskon": 0.1666666667}], "images": ["image53.png"]}, {"id": 29, "category": "AOLIKES", "name": "WRIST BAND", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 18000.0, "harga_grosir": 15000.0, "diskon": 0.1666666667}], "images": ["image28.png"]}, {"id": 30, "category": "AOLIKES", "name": "WRIST BAND JEMPOL", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 54000.0, "harga_grosir": 48600.0, "diskon": 0.1}], "images": ["image23.png"]}, {"id": 31, "category": "AOLIKES", "name": "ASIS ANKLE", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 25000.0, "harga_grosir": 20000.0, "diskon": 0.2}], "images": ["image32.png"]}, {"id": 32, "category": "AOLIKES", "name": "ASIS WRIST", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 30000.0, "harga_grosir": 25000.0, "diskon": 0.1666666667}], "images": ["image8.png"]}, {"id": 33, "category": "AOLIKES", "name": "AVA DEKER", "variants": "GARIS MIRING, GARIS TEGAK", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 10000.0, "harga_grosir": 8000.0, "diskon": 0.2}], "images": ["image2.png", "image46.png"]}, {"id": 34, "category": "AOLIKES", "name": "AVA ELBOWPAD", "variants": "HITAM DAN PUTIH", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 90000.0, "harga_grosir": 85000.0, "diskon": 0.05555555556}], "images": []}, {"id": 35, "category": "FASHION", "name": "AVA GYMSACK", "variants": "", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 20000.0, "harga_grosir": 15000.0, "diskon": 0.25}], "images": ["image42.png"]}, {"id": 36, "category": "FASHION", "name": "AVA KAOS RUNNING", "variants": "HITAM, PUTIH, BIRU", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 35000.0, "harga_grosir": 30000.0, "diskon": 0.1428571429}], "images": []}, {"id": 37, "category": "FASHION", "name": "AVA KNEEPAD", "variants": "HITAM DAN PUTIH", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 90000.0, "harga_grosir": 85000.0, "diskon": 0.05555555556}], "images": ["image69.png"]}, {"id": 38, "category": "FASHION", "name": "AVA TAS DUFFLE", "variants": "WARNA HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 96000.0, "harga_grosir": 90000.0, "diskon": 0.0625}], "images": ["image52.png"]}, {"id": 39, "category": "FASHION", "name": "FOX KAOS KAKI CLASSIC", "variants": "BIRU, MERAH, HIJAU, HITAM, DAN PUTIH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 17000.0, "harga_grosir": 15000.0, "diskon": 0.1176470588}], "images": ["image43.png"]}, {"id": 40, "category": "FASHION", "name": "FOX KAOS KAKI PREMIUM", "variants": "BIRU, HIJAU, KUNING, MERAH, HITAM, PUTIH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 23000.0, "harga_grosir": 19000.0, "diskon": 0.1739130435}], "images": ["image39.png"]}, {"id": 41, "category": "FASHION", "name": "FOX KAOS KAKI PREMIUM MOTIF", "variants": "MERAH, HITAM, PUTIH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 17000.0, "harga_grosir": 15000.0, "diskon": 0.1176470588}], "images": ["image26.png"]}, {"id": 42, "category": "FASHION", "name": "FOX KAOS KAKI PRO", "variants": "HITAM  DAN PUTIH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 27000.0, "harga_grosir": 23000.0, "diskon": 0.1481481481}], "images": ["image34.png"]}, {"id": 43, "category": "FASHION", "name": "FOX KAOS KAKI STANDAR", "variants": "BIRU, HIJAU, MERAH, KUNING,HITAM, PUTIH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 15000.0, "harga_grosir": 13000.0, "diskon": 0.1333333333}], "images": ["image21.png"]}, {"id": 44, "category": "FASHION", "name": "FOX KAOS KAKI TAPE DESAIN", "variants": "ABU, NAVY, HITAM, PUTIH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 18000.0, "harga_grosir": 16000.0, "diskon": 0.1111111111}], "images": ["image16.png"]}, {"id": 45, "category": "FASHION", "name": "JERSEY STELAN", "variants": "", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 50000.0, "harga_grosir": 45000.0, "diskon": 0.1}], "images": ["image12.png"]}, {"id": 46, "category": "FASHION", "name": "JERSEY NATION", "variants": "motif pink palm,  Bambo white black", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 55000.0, "harga_grosir": 50000.0, "diskon": null}], "images": ["image22.jpg", "image17.jpg"]}, {"id": 47, "category": "FASHION", "name": "CELANA NATION", "variants": "", "bandrol": null, "tiers": [{"moq": null, "harga_bandrol": null, "harga_retail": 30000.0, "harga_grosir": 25000.0, "diskon": null}], "images": []}, {"id": 48, "category": "FASHION", "name": "PLAYFAST KAOS KAKI", "variants": "WARIOR DAN CLASSIC, WARNA HITAM DAN PUTIH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 23000.0, "harga_grosir": 20000.0, "diskon": 0.1304347826}], "images": ["image3.png"]}, {"id": 49, "category": "FASHION", "name": "ROMPI KARET", "variants": "", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 12000.0, "harga_grosir": 11000.0, "diskon": 0.08333333333}], "images": ["image10.png"]}, {"id": 50, "category": "FASHION", "name": "ROMPI POLOS DEWASA", "variants": "", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 11000.0, "harga_grosir": 10000.0, "diskon": 0.09090909091}], "images": ["image30.png"]}, {"id": 51, "category": "FASHION", "name": "ROMPI ANAK", "variants": "", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 10000.0, "harga_grosir": 9000.0, "diskon": 0.1}], "images": []}, {"id": 52, "category": "FASHION", "name": "STRING BAG", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 40000.0, "harga_grosir": 35000.0, "diskon": 0.125}], "images": ["image65.png"]}, {"id": 53, "category": "FASHION", "name": "STRING BAG NEW", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 45000.0, "harga_grosir": 40000.0, "diskon": 0.1111111111}], "images": ["image36.png"]}, {"id": 54, "category": "FASHION", "name": "TAS BOLA ISI 1", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 45000.0, "harga_grosir": 40500.0, "diskon": 0.1}], "images": ["image33.png"]}, {"id": 55, "category": "FASHION", "name": "TAS BOLA ISI 2", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 52000.0, "harga_grosir": 46800.0, "diskon": 0.1}], "images": ["image14.png", "image7.png"]}, {"id": 56, "category": "FASHION", "name": "TAS BOLA 4", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 68000.0, "harga_grosir": 61200.0, "diskon": 0.1}], "images": []}, {"id": 57, "category": "FASHION", "name": "TAS BOLA ISI 8", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 85000.0, "harga_grosir": 76500.0, "diskon": 0.1}], "images": ["image11.png"]}, {"id": 58, "category": "FASHION", "name": "TAS SEPATU MULTIFUNGSI TENTENG", "variants": "HITAM", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 50000.0, "harga_grosir": 45000.0, "diskon": 0.1}], "images": ["image40.png"]}, {"id": 59, "category": "FASHION", "name": "TKB GLU", "variants": "", "bandrol": null, "tiers": [{"moq": null, "harga_bandrol": null, "harga_retail": 135000.0, "harga_grosir": 130000.0, "diskon": 0.03703703704}], "images": ["image73.png"]}, {"id": 60, "category": "FASHION", "name": "ANKLE ANTILSLIP", "variants": "HITAM ( S-XL )", "bandrol": 40900.0, "tiers": [{"moq": 6.0, "harga_bandrol": 40900.0, "harga_retail": 30000.0, "harga_grosir": 27000.0, "diskon": 0.1}], "images": ["image47.png"]}, {"id": 61, "category": "FASHION", "name": "ARM WARMER", "variants": "HITAM & PUTIH", "bandrol": 30900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 30900.0, "harga_retail": 15000.0, "harga_grosir": 14500.0, "diskon": 0.03333333333}], "images": ["image62.png"]}, {"id": 62, "category": "FASHION", "name": "BAJU MANSET", "variants": "HITAM, MERAH,BIRUTUA (S, M, L, XL)", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 40000.0, "harga_grosir": 37000.0, "diskon": 0.075}], "images": ["image68.png"]}, {"id": 63, "category": "FASHION", "name": "ELBOW SUPPORT", "variants": "HITAM ( S, M, L, XL )", "bandrol": 29900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 29900.0, "harga_retail": 23000.0, "harga_grosir": 20700.0, "diskon": 0.1}], "images": ["image44.png", "image49.png"]}, {"id": 64, "category": "AVO", "name": "FINGER SUPPORT", "variants": "", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 12000.0, "harga_grosir": 12000.0, "diskon": 0}], "images": []}, {"id": 65, "category": "AVO", "name": "FOOTBALL VEST", "variants": "HITAM ( S, M, L, XL, XXL )", "bandrol": 219900.0, "tiers": [{"moq": 6.0, "harga_bandrol": 219900.0, "harga_retail": 135000.0, "harga_grosir": 130000.0, "diskon": 0.03703703704}], "images": ["image66.png"]}, {"id": 66, "category": "AVO", "name": "HEADBAND", "variants": "HITAM & PUTIH", "bandrol": 30000.0, "tiers": [{"moq": 12.0, "harga_bandrol": 30000.0, "harga_retail": 15000.0, "harga_grosir": null, "diskon": 1}], "images": ["image78.png"]}, {"id": 67, "category": "AVO", "name": "R1 DEWASA", "variants": "BIRU,HIJAU, HITAM, KUNING, ORANGE, MERAH, PUTIH", "bandrol": 42900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 42900.0, "harga_retail": 25000.0, "harga_grosir": 20000.0, "diskon": 0.2}], "images": ["image48.png", "image54.png"]}, {"id": 68, "category": "AVO", "name": "R1 JUNIOR", "variants": "BIRU,HIJAU, HITAM, MERAH, ORANGE, PUTIH", "bandrol": 29500.0, "tiers": [{"moq": 12.0, "harga_bandrol": 29500.0, "harga_retail": 18000.0, "harga_grosir": 16000.0, "diskon": 0.1111111111}], "images": []}, {"id": 69, "category": "AVO", "name": "R8 DEWASA", "variants": "BIRU, HIJAU, HITAM, KUNING, MAROON, MERAH, ORAGE, PUTIH", "bandrol": 52900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 52900.0, "harga_retail": 30000.0, "harga_grosir": 26000.0, "diskon": 0.1333333333}], "images": ["image61.png"]}, {"id": 70, "category": "AVO", "name": "R8 JUNIOR", "variants": "BIRU, HITA, MERAH, ORANGE, PUTIH", "bandrol": 41900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 41900.0, "harga_retail": 25000.0, "harga_grosir": 21000.0, "diskon": 0.16}], "images": ["image107.png"]}, {"id": 71, "category": "KAOSKAKI", "name": "R9 DEWASA", "variants": "BIRU, HIJAU, HITAM, KUNING, MAROON, MERAH, ORAGE, PUTIH", "bandrol": 37900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 37900.0, "harga_retail": 26000.0, "harga_grosir": 21000.0, "diskon": 0.1923076923}], "images": ["image58.png"]}, {"id": 72, "category": "KAOSKAKI", "name": "R9 JUNIOR", "variants": "BIRU, HIJAU, HITAM,KUNING, MERAH, ORANGE, PUTIH", "bandrol": 30900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 30900.0, "harga_retail": 22000.0, "harga_grosir": 21000.0, "diskon": 0.04545454545}], "images": ["image15.png"]}, {"id": 73, "category": "KAOSKAKI", "name": "SAMBUNG DEWASA", "variants": "HITAM, KUNING, PUTIH", "bandrol": 43900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 43900.0, "harga_retail": 30000.0, "harga_grosir": 26000.0, "diskon": 0.1333333333}], "images": ["image60.png"]}, {"id": 74, "category": "KAOSKAKI", "name": "SAMBUNG ANAK", "variants": "HITAM DAN PUTIH", "bandrol": 30900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 30900.0, "harga_retail": 26000.0, "harga_grosir": 21000.0, "diskon": 0.1923076923}], "images": ["image56.png", "image57.png"]}, {"id": 75, "category": "KAOSKAKI", "name": "SARUNG DEKER", "variants": "BIRU, HITAM, PUTIH", "bandrol": 43900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 43900.0, "harga_retail": 25000.0, "harga_grosir": 21000.0, "diskon": 0.16}], "images": []}, {"id": 76, "category": "KAOSKAKI", "name": "KNEE HITAM", "variants": "S, M, L, XL", "bandrol": 30900.0, "tiers": [{"moq": 12.0, "harga_bandrol": 30900.0, "harga_retail": 23000.0, "harga_grosir": 21000.0, "diskon": 0.08695652174}], "images": ["image51.png"]}, {"id": 77, "category": "KAOSKAKI", "name": "KNEE LONG HITAM", "variants": "S, M, L, XL", "bandrol": 99900.0, "tiers": [{"moq": 6.0, "harga_bandrol": 99900.0, "harga_retail": 50000.0, "harga_grosir": 46000.0, "diskon": 0.08}], "images": ["image84.png"]}, {"id": 78, "category": "KAOSKAKI", "name": "LAKOP/ DEKER", "variants": "BIRU, GOLD, HIJAU, HITAM, MERAH, PUTIH, ORANGE", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 12000.0, "harga_grosir": 9000.0, "diskon": 0.25}], "images": ["image63.png", "image77.png"]}, {"id": 79, "category": "KAOSKAKI", "name": "LEGGING SHORT", "variants": "S, M, L, XL", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 52000.0, "harga_grosir": 47000.0, "diskon": 0.09615384615}], "images": []}, {"id": 80, "category": "KAOSKAKI", "name": "LEGGING KNEE", "variants": "S, M, L, XL", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 70000.0, "harga_grosir": 65000.0, "diskon": 0.07142857143}], "images": ["image74.png"]}, {"id": 81, "category": "KAOSKAKI", "name": "LEGGING CALF", "variants": "S, M, L, XL", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 88000.0, "harga_grosir": 80000.0, "diskon": 0.09090909091}], "images": ["image82.png"]}, {"id": 82, "category": "KAOSKAKI", "name": "LEGGING ANKLE", "variants": "S, M, L, XL", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 95000.0, "harga_grosir": 87000.0, "diskon": 0.08421052632}], "images": ["image72.png"]}, {"id": 83, "category": "KAOSKAKI", "name": "TIGH SUPPORT", "variants": "S, M, L, XL", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 26000.0, "harga_grosir": 20000.0, "diskon": 0.2307692308}], "images": ["image50.png"]}, {"id": 84, "category": "KAOSKAKI", "name": "SKIPING", "variants": "HIJAU STABILO DAN HITAM", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 15000.0, "harga_grosir": 12000.0, "diskon": 0.2}], "images": ["image76.png"]}, {"id": 85, "category": "ACC", "name": "CONE KERUCUT 23CM", "variants": "BIRU, HIJAU, MERAH, ORANGE", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 9000.0, "harga_grosir": 7000.0, "diskon": 0.2222222222}], "images": ["image97.png"]}, {"id": 86, "category": "ACC", "name": "CONE MARKER", "variants": "WARNA HIJAU, KUNING, BIRU, MERAH", "bandrol": null, "tiers": [{"moq": "PER SET ISI 50", "harga_bandrol": null, "harga_retail": 135000.0, "harga_grosir": 100000.0, "diskon": 0.2592592593}], "images": ["image109.png"]}, {"id": 87, "category": "ACC", "name": "HURDLE 15CM", "variants": "HIJAU STABILO DAN ORANGE", "bandrol": null, "tiers": [{"moq": "PER SET ISI 5", "harga_bandrol": null, "harga_retail": 190000.0, "harga_grosir": 171000.0, "diskon": 0.1}], "images": ["image45.png", "image95.png"]}, {"id": 88, "category": "ACC", "name": "HURDLE 23CM", "variants": "HIJAU STABILO DAN ORANGE", "bandrol": null, "tiers": [{"moq": "PER SET ISI 5", "harga_bandrol": null, "harga_retail": 210000.0, "harga_grosir": 190000.0, "diskon": 0.09523809524}], "images": ["image92.png", "image86.png"]}, {"id": 89, "category": "ACC", "name": "HURDLE 30CM", "variants": "HIJAU STABILO DAN ORANGE", "bandrol": null, "tiers": [{"moq": "PER SET ISI 5", "harga_bandrol": null, "harga_retail": 230000.0, "harga_grosir": 207000.0, "diskon": 0.1}], "images": ["image71.png"]}, {"id": 90, "category": "ACC", "name": "HURDLE 40CM", "variants": "HIJAU STABILO DAN ORANGE", "bandrol": null, "tiers": [{"moq": "PER SET ISI 5", "harga_bandrol": null, "harga_retail": 275000.0, "harga_grosir": 247500.0, "diskon": 0.1}], "images": ["image91.png"]}, {"id": 91, "category": "ACC", "name": "RESISTANCE JONAS", "variants": "HITAM DAN NAVY", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 29000.0, "harga_grosir": 25000.0, "diskon": 0.1379310345}], "images": ["image105.png"]}, {"id": 92, "category": "ACC", "name": "LADDER 3M", "variants": "", "bandrol": null, "tiers": [{"moq": null, "harga_bandrol": null, "harga_retail": 89000.0, "harga_grosir": 80000.0, "diskon": 0.1011235955}], "images": ["image110.png"]}, {"id": 93, "category": "ACC", "name": "LADDER 5M", "variants": "", "bandrol": null, "tiers": [{"moq": null, "harga_bandrol": null, "harga_retail": 95000.0, "harga_grosir": 89000.0, "diskon": 0.06315789474}], "images": []}, {"id": 94, "category": "ACC", "name": "PELUIT", "variants": "HITAM DAN MERAH", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 12000.0, "harga_grosir": 10000.0, "diskon": 0.1666666667}], "images": ["image80.png"]}, {"id": 95, "category": "ACC", "name": "RESISTANCE AVA", "variants": "", "bandrol": null, "tiers": [{"moq": "PER SET ISI 5", "harga_bandrol": null, "harga_retail": 55000.0, "harga_grosir": 50000.0, "diskon": null}], "images": ["image87.png"]}, {"id": 96, "category": "ACC", "name": "AVA BOLA MONARCH", "variants": "SIZE 4 DAN 5", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 123008.0, "harga_grosir": 86100.0, "diskon": 0.3000455255}], "images": []}, {"id": 97, "category": "ACC", "name": "AVA BOLA VORTERO", "variants": "SIZE 4 DAN 5", "bandrol": null, "tiers": [{"moq": 12.0, "harga_bandrol": null, "harga_retail": 123008.0, "harga_grosir": 86100.0, "diskon": 0.3000455255}], "images": ["image70.jpg"]}, {"id": 98, "category": "ACC", "name": "BOLA LOKAL", "variants": "SIZE 4 DAN 5", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 92000.0, "harga_grosir": 85000.0, "diskon": 0.07608695652}], "images": ["image108.png"]}, {"id": 99, "category": "DEKER CUSTOM", "name": "DEKER SIZE S", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 60000.0, "harga_grosir": 55000.0, "diskon": 0.08333333333}], "images": ["image116.jpg"]}, {"id": 100, "category": "DEKER CUSTOM", "name": "DEKER SIZE M", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 65000.0, "harga_grosir": 60000.0, "diskon": 0.07692307692}], "images": ["image114.jpg"]}, {"id": 101, "category": "DEKER CUSTOM", "name": "DEKER SIZE L", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 70000.0, "harga_grosir": 65000.0, "diskon": 0.07142857143}], "images": ["image115.jpg"]}, {"id": 102, "category": "DEKER CUSTOM", "name": "DEKER SIZE XL", "variants": "", "bandrol": null, "tiers": [{"moq": 6.0, "harga_bandrol": null, "harga_retail": 75000.0, "harga_grosir": 70000.0, "diskon": 0.06666666667}], "images": ["image111.jpg"]}]</script>
+<script>
+
+const RAW_DATA = JSON.parse(document.getElementById('productData').textContent);
+const STORAGE_KEY = 'katalog_produk_data_v1';
+let state = { products: [], editMode: false, search: '', activeCat: 'ALL' };
+
+function loadData(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved){
+    try{ state.products = JSON.parse(saved); return; }catch(e){}
+  }
+  state.products = JSON.parse(JSON.stringify(RAW_DATA));
+}
+function persist(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.products));
+}
+function fmtRupiah(n){
+  if(n === null || n === undefined || n === '') return '-';
+  n = Number(n);
+  if(isNaN(n)) return '-';
+  return 'Rp' + n.toLocaleString('id-ID');
+}
+
+function getCategories(){
+  const cats = {};
+  state.products.forEach(p=>{
+    const c = (p.category || 'LAINNYA').trim();
+    cats[c] = (cats[c]||0) + 1;
+  });
+  return cats;
+}
+
+function renderCatNav(){
+  const nav = document.getElementById('catNav');
+  const cats = getCategories();
+  let html = `<button class="cat-chip ${state.activeCat==='ALL'?'active':''}" data-cat="ALL">Semua <span class="n">${state.products.length}</span></button>`;
+  Object.keys(cats).sort().forEach(c=>{
+    html += `<button class="cat-chip ${state.activeCat===c?'active':''}" data-cat="${escapeAttr(c)}">${escapeHtml(c)} <span class="n">${cats[c]}</span></button>`;
+  });
+  nav.innerHTML = html;
+  nav.querySelectorAll('.cat-chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.activeCat = btn.dataset.cat; renderAll(); });
+  });
+}
+
+function escapeHtml(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+function buildLadder(tiers){
+  if(!tiers || !tiers.length) return '';
+  const vals = tiers.map(t=> Number(t.harga_grosir ?? t.harga_retail ?? 0));
+  const max = Math.max(...vals, 1);
+  let bars = tiers.map((t,i)=>{
+    const v = Number(t.harga_grosir ?? t.harga_retail ?? 0);
+    const h = Math.max(18, (v/max)*100);
+    return `<div class="ladder-bar ${i===tiers.length-1?'min':''}" style="height:${h}%"></div>`;
+  }).join('');
+  return `<div class="ladder">${bars}</div>`;
+}
+
+function priceRowsHtml(p, idx){
+  const tiers = p.tiers && p.tiers.length ? p.tiers : [{moq:'',harga_retail:'',harga_grosir:'',diskon:null}];
+  return tiers.map((t,ti)=>{
+    return `<div class="price-row" data-tier="${ti}">
+      <span class="label">${state.editMode? `<input class="moq-input" data-idx="${idx}" data-ti="${ti}" value="${escapeAttr(t.moq??'')}" placeholder="MOQ" style="width:64px;font-family:var(--font-mono);font-size:10.5px;border:1px solid var(--line);border-radius:5px;padding:2px 4px;">` : `<span class="moq">min ${escapeHtml(t.moq ?? '-')}</span>`}</span>
+      <span class="val" contenteditable="${state.editMode}" data-field="harga_grosir" data-idx="${idx}" data-ti="${ti}">${state.editMode ? (t.harga_grosir??'') : fmtRupiah(t.harga_grosir)}</span>
+      ${state.editMode ? `<button class="remove-tier" data-idx="${idx}" data-ti="${ti}" title="Hapus baris harga">✕</button>` : ''}
+    </div>`;
+  }).join('') + (state.editMode ? `<button class="add-tier-btn" data-idx="${idx}">+ Tambah tingkat harga</button>` : '');
+}
+
+function categorySelectHtml(p, idx){
+  const cats = Object.keys(getCategories()).sort();
+  const current = (p.category || 'LAINNYA').trim();
+  if(!cats.includes(current)) cats.push(current);
+  let opts = cats.map(c=> `<option value="${escapeAttr(c)}" ${c===current?'selected':''}>${escapeHtml(c)}</option>`).join('');
+  opts += `<option value="__new__">+ Kategori baru...</option>`;
+  return `<select class="cat-badge-select" data-idx="${idx}">${opts}</select>`;
+}
+
+function cardHtml(p, idx){
+  const rawImg = (p.images && p.images[0]) ? p.images[0] : null;
+  const img = rawImg ? (rawImg.startsWith('data:') ? rawImg : `images/${rawImg}`) : null;
+  const firstTier = (p.tiers && p.tiers[0]) || {};
+  const retail = firstTier.harga_retail;
+  const bandrol = p.bandrol;
+
+  const imgInner = img
+    ? `<img src="${escapeAttr(img)}" alt="${escapeAttr(p.name)}" data-idx="${idx}">`
+    : `<div class="no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Belum ada gambar</span></div>`;
+
+  return `
+  <div class="card" data-idx="${idx}">
+    ${state.editMode ? `<button class="del-btn" data-idx="${idx}" title="Hapus produk">✕</button>` : ''}
+    <div class="card-img-wrap" data-idx="${idx}">
+      ${state.editMode ? categorySelectHtml(p, idx) : `<span class="cat-badge">${escapeHtml(p.category || 'LAINNYA')}</span>`}
+      ${imgInner}
+      ${state.editMode ? `<button class="img-edit-btn" data-idx="${idx}">📷 Ganti Gambar</button>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-name" contenteditable="${state.editMode}" data-field="name" data-idx="${idx}">${escapeHtml(p.name)}</div>
+      <div class="card-variant" contenteditable="${state.editMode}" data-field="variants" data-idx="${idx}"><b>${p.variants ? 'Varian: ' : ''}</b>${escapeHtml(p.variants || (state.editMode ? 'Tambahkan varian/deskripsi...' : ''))}</div>
+      <div class="price-block">
+        ${bandrol ? `<div class="price-row"><span class="label">Bandrol</span><span class="bandrol" contenteditable="${state.editMode}" data-field="bandrol" data-idx="${idx}">${state.editMode? bandrol : fmtRupiah(bandrol)}</span></div>` : ''}
+        <div class="price-row"><span class="label">Harga Jual</span><span class="retail-price" contenteditable="${state.editMode}" data-field="harga_retail" data-idx="${idx}">${state.editMode? (retail??'') : fmtRupiah(retail)}</span></div>
+        ${priceRowsHtml(p, idx)}
+        ${buildLadder(p.tiers)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function matchesFilter(p){
+  if(state.activeCat !== 'ALL' && (p.category||'LAINNYA').trim() !== state.activeCat) return false;
+  if(state.search){
+    const s = state.search.toLowerCase();
+    const hay = `${p.name} ${p.category} ${p.variants}`.toLowerCase();
+    if(!hay.includes(s)) return false;
+  }
+  return true;
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('emptyState');
+  let html = '';
+  let count = 0;
+  state.products.forEach((p, idx)=>{
+    if(!matchesFilter(p)) return;
+    count++;
+    html += cardHtml(p, idx);
+  });
+  if(state.editMode){
+    html += `<button class="card add-card" id="addCardBtn">+<br>Tambah Produk</button>`;
+  }
+  grid.innerHTML = html;
+  empty.classList.toggle('hidden', count>0);
+  document.getElementById('resultCount').textContent = count + ' produk';
+  attachCardEvents();
+}
+
+function attachCardEvents(){
+  document.querySelectorAll('.card-name, .card-variant, .price-row .val, .bandrol, .retail-price').forEach(el=>{
+    el.addEventListener('blur', onFieldEdit);
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
+  });
+  document.querySelectorAll('.moq-input').forEach(el=>{
+    el.addEventListener('change', e=>{
+      const idx = +el.dataset.idx, ti = +el.dataset.ti;
+      state.products[idx].tiers[ti].moq = el.value;
+      persist();
+    });
+  });
+  document.querySelectorAll('.remove-tier').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = +el.dataset.idx, ti = +el.dataset.ti;
+      state.products[idx].tiers.splice(ti,1);
+      persist(); renderAll();
+    });
+  });
+  document.querySelectorAll('.add-tier-btn').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = +el.dataset.idx;
+      if(!state.products[idx].tiers) state.products[idx].tiers = [];
+      state.products[idx].tiers.push({moq:'', harga_retail:'', harga_grosir:'', diskon:null});
+      persist(); renderAll();
+    });
+  });
+  document.querySelectorAll('.cat-badge-select').forEach(el=>{
+    el.addEventListener('click', e=> e.stopPropagation());
+    el.addEventListener('change', (e)=>{
+      const idx = +el.dataset.idx;
+      let val = el.value;
+      if(val === '__new__'){
+        const newCat = prompt('Nama kategori baru:');
+        if(!newCat || !newCat.trim()){ renderAll(); return; }
+        val = newCat.trim().toUpperCase();
+      }
+      state.products[idx].category = val;
+      persist();
+      renderAll();
+    });
+  });
+  document.querySelectorAll('.del-btn').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const idx = +el.dataset.idx;
+      if(confirm('Hapus produk "'+state.products[idx].name+'"?')){
+        state.products.splice(idx,1);
+        persist(); renderAll();
+      }
+    });
+  });
+  document.querySelectorAll('.img-edit-btn').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      pendingImgIdx = +el.dataset.idx;
+      document.getElementById('imageFileInput').click();
+    });
+  });
+  document.querySelectorAll('.card-img-wrap').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(state.editMode) return;
+      const idx = +el.dataset.idx;
+      const p = state.products[idx];
+      if(p.images && p.images[0]){
+        const src = p.images[0].startsWith('data:') ? p.images[0] : 'images/'+p.images[0];
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').classList.remove('hidden');
+      }
+    });
+  });
+  const addBtn = document.getElementById('addCardBtn');
+  if(addBtn){
+    addBtn.addEventListener('click', ()=>{
+      state.products.push({category:'LAINNYA', name:'Produk Baru', variants:'', bandrol:null, tiers:[{moq:'', harga_retail:'', harga_grosir:'', diskon:null}], images:[]});
+      persist(); renderAll();
+      setTimeout(()=>{ window.scrollTo(0, document.body.scrollHeight); }, 50);
+    });
+  }
+}
+
+function onFieldEdit(e){
+  const el = e.target;
+  const idx = +el.dataset.idx;
+  const field = el.dataset.field;
+  const val = el.innerText.trim();
+  if(field === 'harga_grosir'){
+    const ti = +el.dataset.ti;
+    const num = val.replace(/[^0-9]/g,'');
+    state.products[idx].tiers[ti].harga_grosir = num === '' ? null : Number(num);
+  } else if(field === 'harga_retail'){
+    const num = val.replace(/[^0-9]/g,'');
+    if(!state.products[idx].tiers || !state.products[idx].tiers.length){
+      state.products[idx].tiers = [{moq:'', harga_retail:null, harga_grosir:'', diskon:null}];
+    }
+    state.products[idx].tiers[0].harga_retail = num === '' ? null : Number(num);
+  } else if(field === 'bandrol'){
+    const num = val.replace(/[^0-9]/g,'');
+    state.products[idx].bandrol = num === '' ? null : Number(num);
+  } else if(field === 'variants'){
+    state.products[idx].variants = val.replace(/^Varian:\s*/,'');
+  } else {
+    state.products[idx][field] = val;
+  }
+  persist();
+}
+
+let pendingImgIdx = null;
+document.getElementById('imageFileInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file || pendingImgIdx===null) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    state.products[pendingImgIdx].images = [ev.target.result]; // base64 data URL replaces filename
+    persist();
+    renderAll();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+// Override cardHtml image src logic to support base64 data URLs
+const _origCardHtml = cardHtml;
+
+function renderAll(){
+  renderCatNav();
+  renderGrid();
+}
+
+document.getElementById('editToggle').addEventListener('click', ()=>{
+  state.editMode = !state.editMode;
+  document.getElementById('editToggle').classList.toggle('active', state.editMode);
+  document.getElementById('editToggle').textContent = state.editMode ? '✓ Selesai Edit' : '✎ Mode Edit';
+  document.getElementById('editBanner').classList.toggle('hidden', !state.editMode);
+  renderAll();
+});
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  state.search = e.target.value;
+  renderGrid();
+});
+
+document.getElementById('menuToggle').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('menuDropdown').classList.toggle('hidden');
+});
+document.addEventListener('click', ()=> document.getElementById('menuDropdown').classList.add('hidden'));
+
+document.getElementById('addProductBtn').addEventListener('click', ()=>{
+  state.products.push({category:'LAINNYA', name:'Produk Baru', variants:'', bandrol:null, tiers:[{moq:'', harga_retail:'', harga_grosir:'', diskon:null}], images:[]});
+  persist();
+  if(!state.editMode){ document.getElementById('editToggle').click(); } else { renderAll(); }
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state.products, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'katalog_produk_export.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(Array.isArray(data)){
+        state.products = data;
+        persist();
+        renderAll();
+        alert('Data berhasil diimpor.');
+      } else { alert('Format file tidak valid.'); }
+    }catch(err){ alert('Gagal membaca file JSON.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Semua perubahan akan dihapus dan kembali ke data awal. Lanjutkan?')){
+    localStorage.removeItem(STORAGE_KEY);
+    loadData();
+    renderAll();
+  }
+});
+
+document.getElementById('lightboxClose').addEventListener('click', ()=> document.getElementById('lightbox').classList.add('hidden'));
+document.getElementById('lightbox').addEventListener('click', (e)=>{ if(e.target.id==='lightbox') document.getElementById('lightbox').classList.add('hidden'); });
+
+loadData();
+renderAll();
+
+</script>
+</body>
+</html>
