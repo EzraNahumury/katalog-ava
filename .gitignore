@@ -27,6 +27,8 @@ composer.phar
 backend/src/config.php
 backend/uploads/*
 !backend/uploads/.gitkeep
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep
 
 # --- Database dumps ---
 *.sql.bak

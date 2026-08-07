@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Semua request non-file/direktori diarahkan ke index.php (front controller)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Cegah direktori listing
+Options -Indexes
+
+# Kompresi
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE application/json application/javascript text/css text/html
+</IfModule>
