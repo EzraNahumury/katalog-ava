@@ -6,6 +6,7 @@ import Image from 'next/image';
 import type { Product } from '@/lib/types';
 import { fetchProducts } from '@/lib/api';
 import PublicProductCard from './PublicProductCard';
+import ProductDetailModal from './ProductDetailModal';
 import Lightbox from './Lightbox';
 
 const MARQUEE_TEXT = 'PREMIUM QUALITY  ·  GROSIR & RETAIL  ·  KIRIM DARI JOGJAKARTA  ·  KATALOG TERBARU  ·  PARTNER OLAHRAGA & FISIOTERAPI';
@@ -17,6 +18,8 @@ export default function Catalog() {
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState<string>('ALL');
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [detail, setDetail] = useState<Product | null>(null);
+  const [preparing, setPreparing] = useState(false);
 
   const footerRef = useRef<HTMLElement | null>(null);
 
@@ -75,6 +78,32 @@ export default function Catalog() {
   // Key untuk memicu re-render + re-animate grid ketika filter berubah
   const gridKey = `${activeCat}::${search}`;
 
+  /**
+   * Gambar kartu pakai loading="lazy" — kalau langsung window.print() gambar
+   * yang belum masuk viewport bisa kosong di PDF. Jadi paksa eager + tunggu
+   * decode dulu, baru buka dialog print.
+   */
+  const handlePrint = async () => {
+    if (preparing) return;
+    setPreparing(true);
+    try {
+      const imgs = Array.from(
+        document.querySelectorAll<HTMLImageElement>('.pub-card-img img')
+      );
+      imgs.forEach((img) => {
+        img.loading = 'eager';
+      });
+      await Promise.all(
+        imgs.map((img) =>
+          img.complete ? Promise.resolve() : img.decode().catch(() => undefined)
+        )
+      );
+    } finally {
+      setPreparing(false);
+    }
+    window.print();
+  };
+
   return (
     <div className="pub-page">
       {/* Top mini-header dengan logo */}
@@ -99,7 +128,8 @@ export default function Catalog() {
         </Link>
         <button
           className="pub-pdf-btn"
-          onClick={() => window.print()}
+          onClick={handlePrint}
+          disabled={preparing}
           title="Simpan katalog sebagai PDF"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -107,7 +137,7 @@ export default function Catalog() {
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          DOWNLOAD PDF
+          {preparing ? 'MENYIAPKAN…' : 'DOWNLOAD PDF'}
         </button>
       </header>
 
@@ -193,7 +223,7 @@ export default function Catalog() {
                 key={p.id}
                 product={p}
                 index={i}
-                onImageClick={setLightbox}
+                onOpen={setDetail}
               />
             ))}
           </div>
@@ -211,7 +241,8 @@ export default function Catalog() {
             <div className="pub-footer-meta-line">JOGJAKARTA — INDONESIA</div>
             <button
               className="pub-pdf-btn"
-              onClick={() => window.print()}
+              onClick={handlePrint}
+              disabled={preparing}
               style={{ marginTop: 14 }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -219,11 +250,19 @@ export default function Catalog() {
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              DOWNLOAD PDF
+              {preparing ? 'MENYIAPKAN…' : 'DOWNLOAD PDF'}
             </button>
           </div>
         </div>
       </footer>
+
+      {detail && (
+        <ProductDetailModal
+          product={detail}
+          onClose={() => setDetail(null)}
+          onZoom={setLightbox}
+        />
+      )}
 
       {lightbox && (
         <Lightbox src={lightbox} onClose={() => setLightbox(null)} />

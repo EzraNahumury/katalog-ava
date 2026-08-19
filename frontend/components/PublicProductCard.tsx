@@ -2,11 +2,12 @@
 
 import type { Product, PriceTier } from '@/lib/types';
 import { fmtRupiah } from '@/lib/api';
+import { parseVariants, variantUnit } from '@/lib/variants';
 
 type Props = {
   product: Product;
   index?: number;
-  onImageClick?: (src: string) => void;
+  onOpen?: (product: Product) => void;
 };
 
 function Ladder({ tiers }: { tiers: PriceTier[] }) {
@@ -33,19 +34,30 @@ function Ladder({ tiers }: { tiers: PriceTier[] }) {
   );
 }
 
-export default function PublicProductCard({ product, index = 0, onImageClick }: Props) {
+export default function PublicProductCard({ product, index = 0, onOpen }: Props) {
   const { name, category, variants, bandrol, harga_jual, image, tiers } = product;
   const hasBandrol = bandrol != null && bandrol > (harga_jual ?? 0);
+  const { label, items } = parseVariants(variants);
+  const unit = variantUnit(label);
+
+  const open = () => onOpen?.(product);
 
   return (
-    <div
+    <article
       className="pub-card"
       style={{ ['--i' as string]: index } as React.CSSProperties}
+      role="button"
+      tabIndex={0}
+      aria-label={`Lihat detail ${name}`}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          open();
+        }
+      }}
     >
-      <div
-        className="pub-card-img"
-        onClick={() => image && onImageClick?.(image)}
-      >
+      <div className="pub-card-img">
         {category && <span className="pub-card-cat">{category}</span>}
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -60,15 +72,30 @@ export default function PublicProductCard({ product, index = 0, onImageClick }: 
             <span>Belum ada gambar</span>
           </div>
         )}
+        <span className="pub-card-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-3.5-3.5" />
+          </svg>
+          Lihat detail
+        </span>
       </div>
 
       <div className="pub-card-body">
         <h3 className="pub-card-name">{name}</h3>
-        {variants && (
-          <p className="pub-card-variant">
-            <b>Varian: </b>
-            <span className="list">{variants}</span>
-          </p>
+
+        {items.length > 0 && (
+          <div className="pub-card-varwrap">
+            <p className="pub-card-variant">
+              <b>Varian: </b>
+              <span className="list">{items.join(', ')}</span>
+            </p>
+            {items.length > 1 && (
+              <span className="pub-card-varmore">
+                {items.length} {unit} — lihat semua
+              </span>
+            )}
+          </div>
         )}
 
         <div className="pub-price-block">
@@ -93,6 +120,6 @@ export default function PublicProductCard({ product, index = 0, onImageClick }: 
           {tiers && tiers.length > 0 && <Ladder tiers={tiers} />}
         </div>
       </div>
-    </div>
+    </article>
   );
 }
