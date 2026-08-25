@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { Product, PriceTier } from '@/lib/types';
 import { fmtRupiah } from '@/lib/api';
 import { parseVariants, variantUnit } from '@/lib/variants';
@@ -39,6 +40,10 @@ export default function PublicProductCard({ product, index = 0, onOpen }: Props)
   const hasBandrol = bandrol != null && bandrol > (harga_jual ?? 0);
   const { label, items } = parseVariants(variants);
   const unit = variantUnit(label);
+  // Tier termurah dipakai sebagai ringkasan di kartu mobile; sisanya di detail.
+  const bestTier = tiers?.length ? tiers[tiers.length - 1] : null;
+
+  const [imgReady, setImgReady] = useState(false);
 
   const open = () => onOpen?.(product);
 
@@ -61,7 +66,17 @@ export default function PublicProductCard({ product, index = 0, onOpen }: Props)
         {category && <span className="pub-card-cat">{category}</span>}
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt={name} loading="lazy" />
+          <img
+            src={image}
+            alt={name}
+            loading="lazy"
+            className={imgReady ? 'ready' : ''}
+            onLoad={() => setImgReady(true)}
+            ref={(el) => {
+              // gambar dari cache tidak memicu onLoad
+              if (el?.complete) setImgReady(true);
+            }}
+          />
         ) : (
           <div className="pub-card-noimg">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -78,6 +93,13 @@ export default function PublicProductCard({ product, index = 0, onOpen }: Props)
             <path d="m21 21-3.5-3.5" />
           </svg>
           Lihat detail
+        </span>
+        {/* Penanda tap di mobile — kartu tetap bisa diklik seluruhnya */}
+        <span className="pub-card-open" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h13" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
         </span>
       </div>
 
@@ -96,6 +118,14 @@ export default function PublicProductCard({ product, index = 0, onOpen }: Props)
               </span>
             )}
           </div>
+        )}
+
+        {/* Ringkasan varian untuk layar kecil */}
+        {items.length > 1 && (
+          <span className="pub-card-varchip">
+            <i />
+            {items.length} {unit}
+          </span>
         )}
 
         <div className="pub-price-block">
@@ -118,6 +148,20 @@ export default function PublicProductCard({ product, index = 0, onOpen }: Props)
             </div>
           ))}
           {tiers && tiers.length > 0 && <Ladder tiers={tiers} />}
+        </div>
+
+        {/* Blok harga ringkas untuk layar kecil */}
+        <div className="pub-card-mini">
+          <div className="price">
+            <span className="now">{fmtRupiah(harga_jual)}</span>
+            {hasBandrol && <span className="was">{fmtRupiah(bandrol)}</span>}
+          </div>
+          {bestTier && (
+            <div className="pub-card-best">
+              <span className="moq">min {bestTier.moq ?? '-'}</span>
+              {fmtRupiah(bestTier.harga_grosir)}
+            </div>
+          )}
         </div>
       </div>
     </article>

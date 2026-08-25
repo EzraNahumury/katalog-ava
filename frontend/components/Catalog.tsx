@@ -20,6 +20,7 @@ export default function Catalog() {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [detail, setDetail] = useState<Product | null>(null);
   const [preparing, setPreparing] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const footerRef = useRef<HTMLElement | null>(null);
 
@@ -28,6 +29,14 @@ export default function Catalog() {
       .then((data) => setProducts(data))
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Header mobile: garis + bayangan baru muncul setelah halaman digeser
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 6);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // IntersectionObserver — reveal footer huge title saat masuk viewport
@@ -73,6 +82,16 @@ export default function Catalog() {
   }, [products, search, activeCat]);
 
   const year = new Date().getFullYear();
+
+  // Ringkasan di bawah judul: jadi penunjuk hasil filter, bukan sekadar hiasan
+  const heroSub = (() => {
+    if (loading) return 'MEMUAT KATALOG…';
+    if (!products.length) return 'BELUM ADA PRODUK';
+    if (filtered.length !== products.length)
+      return `${filtered.length} DARI ${products.length} PRODUK`;
+    return `${products.length} PRODUK · GROSIR & RETAIL`;
+  })();
+
   const catKeys = Object.keys(categories).sort();
 
   // Key untuk memicu re-render + re-animate grid ketika filter berubah
@@ -83,6 +102,12 @@ export default function Catalog() {
    * yang belum masuk viewport bisa kosong di PDF. Jadi paksa eager + tunggu
    * decode dulu, baru buka dialog print.
    */
+  // Rail kategori: chip yang dipilih digeser ke tengah supaya tetap kelihatan
+  const pickCat = (cat: string, el: HTMLElement) => {
+    setActiveCat(cat);
+    el.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  };
+
   const handlePrint = async () => {
     if (preparing) return;
     setPreparing(true);
@@ -107,7 +132,7 @@ export default function Catalog() {
   return (
     <div className="pub-page">
       {/* Top mini-header dengan logo */}
-      <header className="pub-container pub-topbar">
+      <header className={`pub-container pub-topbar ${scrolled ? 'scrolled' : ''}`}>
         <Link href="/" className="pub-brand-row pub-logo-wrap" aria-label="Ava Sportivo — beranda">
           <span className="pub-logo-circle">
             <Image
@@ -137,7 +162,7 @@ export default function Catalog() {
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          {preparing ? 'MENYIAPKAN…' : 'DOWNLOAD PDF'}
+          <span className="label">{preparing ? 'MENYIAPKAN…' : 'DOWNLOAD PDF'}</span>
         </button>
       </header>
 
@@ -155,13 +180,14 @@ export default function Catalog() {
           <div>
             <div className="pub-crumb">/ KATALOG</div>
             <h1 className="pub-title">Koleksi terbaru</h1>
+            <p className="pub-hero-sub">{heroSub}</p>
           </div>
 
           <div className="pub-chips">
             <button
               className={`pub-chip ${activeCat === 'ALL' ? 'active' : ''}`}
               style={{ ['--i' as string]: 0 } as React.CSSProperties}
-              onClick={() => setActiveCat('ALL')}
+              onClick={(e) => pickCat('ALL', e.currentTarget)}
             >
               ALL
             </button>
@@ -170,7 +196,7 @@ export default function Catalog() {
                 key={cat}
                 className={`pub-chip ${activeCat === cat ? 'active' : ''}`}
                 style={{ ['--i' as string]: i + 1 } as React.CSSProperties}
-                onClick={() => setActiveCat(cat)}
+                onClick={(e) => pickCat(cat, e.currentTarget)}
               >
                 {cat}
               </button>
@@ -188,10 +214,21 @@ export default function Catalog() {
           </svg>
           <input
             type="text"
-            placeholder="Cari produk berdasarkan nama, kategori, atau varian..."
+            placeholder="Cari produk atau varian…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              className="pub-search-clear"
+              onClick={() => setSearch('')}
+              aria-label="Hapus pencarian"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          )}
           <span className="pub-search-count">
             {filtered.length.toString().padStart(2, '0')} / {products.length.toString().padStart(2, '0')}
           </span>
@@ -201,7 +238,18 @@ export default function Catalog() {
       {/* Grid */}
       <section className="pub-container pub-grid-wrap">
         {loading ? (
-          <p className="pub-empty">Memuat koleksi…</p>
+          <div className="pub-grid" aria-hidden="true">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div className="pub-skel" key={i}>
+                <div className="pub-skel-img" />
+                <div className="pub-skel-body">
+                  <div className="pub-skel-line" />
+                  <div className="pub-skel-line short" />
+                  <div className="pub-skel-line tall" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : error ? (
           <p className="pub-empty">
             Gagal memuat data. <Link href="/admin" style={{ color: 'var(--pub-accent)' }}>Login sebagai admin →</Link>
@@ -215,7 +263,9 @@ export default function Catalog() {
             .
           </p>
         ) : filtered.length === 0 ? (
-          <p className="pub-empty">Belum ada produk di kategori ini.</p>
+          <p className="pub-empty">
+            Tidak ada produk yang cocok. Coba kata kunci atau kategori lain.
+          </p>
         ) : (
           <div className="pub-grid" key={gridKey}>
             {filtered.map((p, i) => (
@@ -240,7 +290,7 @@ export default function Catalog() {
             <div className="pub-footer-meta-line">© {year} AVA SPORTIVO</div>
             <div className="pub-footer-meta-line">JOGJAKARTA — INDONESIA</div>
             <button
-              className="pub-pdf-btn"
+              className="pub-pdf-btn wide"
               onClick={handlePrint}
               disabled={preparing}
               style={{ marginTop: 14 }}
@@ -250,7 +300,7 @@ export default function Catalog() {
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              {preparing ? 'MENYIAPKAN…' : 'DOWNLOAD PDF'}
+              <span className="label">{preparing ? 'MENYIAPKAN…' : 'DOWNLOAD PDF'}</span>
             </button>
           </div>
         </div>

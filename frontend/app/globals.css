@@ -12,6 +12,10 @@
   --pub-line-dark:rgba(14,21,24,.14);
   --pub-accent:#E24E1B;
   --pub-frame:#F5F4EE;
+  /* kanvas khusus tampilan mobile (kartu putih berdiri di atasnya) */
+  --pub-canvas:#EDEFEC;
+  --pub-teal:#0F9E8C;
+  --pub-teal-bg:#E6F7F4;
 }
 
 /* ---- Base transisi & smooth scroll ---- */
@@ -50,6 +54,10 @@
 @keyframes pub-pulse-dot{
   0%,100%{opacity:1;transform:scale(1);}
   50%{opacity:.4;transform:scale(.85);}
+}
+@keyframes pub-sheet-up{
+  from{transform:translateY(100%);}
+  to{transform:translateY(0);}
 }
 
 /* Public: layout dasar */
@@ -108,6 +116,10 @@
 .pub-search-inner input::placeholder{color:var(--pub-muted);transition:opacity .2s;}
 .pub-search-inner:focus-within input::placeholder{opacity:.5;}
 .pub-search-count{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pub-muted);transition:color .3s;}
+.pub-search-clear{flex:none;width:24px;height:24px;border-radius:50%;border:none;background:var(--pub-frame);color:var(--pub-muted);display:flex;align-items:center;justify-content:center;transition:background .25s, color .25s, transform .25s;}
+.pub-search-clear:hover{background:var(--pub-ink);color:#fff;}
+.pub-search-clear:active{transform:scale(.9);}
+.pub-search-clear svg{width:11px;height:11px;}
 .pub-search-inner:focus-within .pub-search-count{color:var(--pub-ink);}
 
 /* Grid produk */
@@ -122,10 +134,11 @@
 .pub-card-hint{position:absolute;left:12px;bottom:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.94);color:var(--pub-ink);font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 11px;border-radius:999px;box-shadow:0 4px 12px rgba(14,21,24,.14);opacity:0;transform:translateY(8px);transition:opacity .3s, transform .35s cubic-bezier(.16,1,.3,1);pointer-events:none;}
 .pub-card-hint svg{width:11px;height:11px;}
 .pub-card:hover .pub-card-hint,.pub-card:focus-visible .pub-card-hint{opacity:1;transform:translateY(0);}
-.pub-card-img{position:relative;aspect-ratio:1/1;background:linear-gradient(135deg,#F0EEE7,#E4E2D8);overflow:hidden;}
+.pub-card-img{position:relative;aspect-ratio:1/1;background:linear-gradient(135deg,#F0EEE7,#E4E2D8);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(14,21,24,.045);}
 .pub-card-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top, rgba(14,21,24,.18) 0%, transparent 50%);opacity:0;transition:opacity .4s;pointer-events:none;}
 .pub-card:hover .pub-card-img::after{opacity:1;}
-.pub-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.16,1,.3,1);}
+.pub-card-img img{width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.02);transition:transform .7s cubic-bezier(.16,1,.3,1), opacity .5s ease;}
+.pub-card-img img.ready{opacity:1;transform:scale(1);}
 .pub-card:hover .pub-card-img img{transform:scale(1.06);}
 .pub-card-noimg{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#B5B3A7;gap:8px;}
 .pub-card-noimg svg{width:38px;height:38px;opacity:.6;}
@@ -203,7 +216,8 @@
 @media (min-width:820px){.pub-modal-media{aspect-ratio:auto;height:100%;min-height:380px;}}
 .pub-modal-media img{width:100%;height:100%;object-fit:contain;padding:10px;}
 .pub-modal-media.zoomable{cursor:zoom-in;}
-.pub-modal-zoomhint{position:absolute;left:12px;bottom:12px;background:rgba(14,21,24,.78);color:#fff;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:6px 11px;border-radius:999px;pointer-events:none;}
+.pub-modal-zoomhint{position:absolute;right:12px;bottom:12px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.92);color:var(--pub-ink);font-family:var(--font-mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;padding:6px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(14,21,24,.16);pointer-events:none;}
+.pub-modal-zoomhint svg{width:11px;height:11px;}
 .pub-modal-info{padding:22px 20px 26px;display:flex;flex-direction:column;gap:16px;min-width:0;}
 @media (min-width:820px){.pub-modal-info{padding:30px 32px 34px;}}
 .pub-modal-cat{align-self:flex-start;background:var(--pub-ink);color:#fff;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border-radius:6px;font-weight:600;}
@@ -216,15 +230,141 @@
 .pub-modal-sec-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--pub-muted);font-weight:600;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--pub-line);}
 .pub-modal-sec-title .count{color:var(--pub-accent);flex:none;}
 .pub-var-chips{list-style:none;display:flex;flex-wrap:wrap;gap:7px;padding:0;margin:0;}
-.pub-var-chip{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--pub-ink);background:var(--pub-frame);border:1px solid var(--pub-line);border-radius:999px;padding:6px 12px;}
+.pub-var-chip{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--pub-ink);background:var(--pub-frame);border:1px solid var(--pub-line);border-radius:999px;padding:6px 12px;animation:pub-reveal-scale .42s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(90ms + var(--i,0) * 32ms);}
 .pub-modal-tiers{width:100%;border-collapse:collapse;}
 .pub-modal-tiers th{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--pub-muted);font-weight:600;text-align:left;padding:0 0 8px;}
 .pub-modal-tiers th:last-child,.pub-modal-tiers td:last-child{text-align:right;}
 .pub-modal-tiers td{padding:9px 0;border-top:1px dashed var(--pub-line);font-size:13px;}
+.pub-modal-tiers tbody tr{animation:pub-reveal-up .5s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(140ms + var(--i,0) * 70ms);}
 .pub-modal-tiers td .moq{font-family:var(--font-mono);font-size:10.5px;background:#E6F7F4;color:#0F9E8C;padding:3px 9px;border-radius:5px;font-weight:600;}
 .pub-modal-tiers td.price{font-family:var(--font-mono);font-weight:700;font-size:14px;color:var(--pub-ink);}
 .pub-modal-tiers td.save{font-family:var(--font-mono);font-size:12px;color:var(--pub-accent);font-weight:600;}
 .pub-modal-note{font-size:11px;line-height:1.6;color:var(--pub-muted);margin:0;}
+
+
+/* ---- Elemen khusus tampilan mobile (default disembunyikan) ---- */
+.pub-card-open,.pub-card-varchip,.pub-card-mini,.pub-sheet-handle,.pub-hero-sub{display:none;}
+
+/* ---- Skeleton saat produk masih dimuat ---- */
+.pub-skel{background:#fff;border:1px solid var(--pub-line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
+.pub-skel-img{aspect-ratio:1/1;}
+.pub-skel-body{padding:14px;display:flex;flex-direction:column;gap:9px;}
+.pub-skel-line{height:10px;border-radius:5px;}
+.pub-skel-line.short{width:55%;}
+.pub-skel-line.tall{height:34px;border-radius:8px;margin-top:4px;}
+.pub-skel-img,.pub-skel-line{background:linear-gradient(90deg,#EDEDE6 25%,#F7F7F2 37%,#EDEDE6 63%);background-size:400% 100%;animation:pub-shine 1.6s ease-in-out infinite;}
+
+/* ================================================================
+   TAMPILAN MOBILE (<=719px)
+   Katalog dibuka sambil di toko/lapangan, jadi di layar kecil
+   diperlakukan seperti aplikasi: kanvas abu, kartu putih dua kolom,
+   header nempel, detail produk naik dari bawah sebagai sheet.
+   ================================================================ */
+@media (max-width:719px){
+  /* overflow-x:hidden bikin sticky header mati (jadi scroll container baru) */
+  .pub-page{background:var(--pub-canvas);overflow-x:clip;}
+  .pub-container{padding:0 14px;}
+
+  /* Header nempel — garis & bayangan baru muncul setelah discroll */
+  .pub-topbar{position:sticky;top:0;z-index:50;padding:9px 14px;background:rgba(237,239,236,.94);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid transparent;transition:border-color .35s, box-shadow .35s;}
+  .pub-topbar.scrolled{border-bottom-color:rgba(14,21,24,.09);box-shadow:0 10px 24px -20px rgba(14,21,24,.85);}
+  .pub-logo-circle{width:38px;height:38px;}
+  .pub-brand-row{gap:10px;}
+  .pub-brand-text .name{font-size:9.5px;letter-spacing:.12em;}
+  .pub-brand-text .tagline{font-size:8px;margin-top:2px;}
+
+  /* Tombol PDF jadi ikon bulat di header, tetap pill lebar di footer */
+  .pub-pdf-btn{width:38px;height:38px;padding:0;border-radius:50%;justify-content:center;flex:none;}
+  .pub-pdf-btn .label{display:none;}
+  .pub-pdf-btn svg{width:15px;height:15px;}
+  .pub-pdf-btn.wide{width:100%;height:46px;border-radius:14px;background:var(--pub-ink);border-color:var(--pub-ink);color:#fff;}
+  .pub-pdf-btn.wide .label{display:inline;}
+  .pub-pdf-btn.wide::before{display:none;}
+  .pub-pdf-btn.wide svg{width:13px;height:13px;}
+
+  .pub-marquee{padding:8px 0;margin-top:0;}
+  .pub-marquee-track{gap:32px;padding-right:32px;}
+  .pub-marquee-track span{font-size:9px;letter-spacing:.16em;gap:32px;}
+
+  /* Hero ringkas — baris hitungan produk menggantikan counter di search */
+  .pub-hero{padding:20px 0 2px;}
+  .pub-hero-row{display:block;}
+  .pub-crumb{font-size:9px;margin-bottom:8px;animation-delay:.25s;}
+  .pub-title{font-size:31px;letter-spacing:-.03em;animation-delay:.3s;}
+  .pub-hero-sub{display:block;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--pub-muted);margin-top:9px;animation:pub-reveal-fade .6s ease .45s both;}
+
+  /* Chips jadi satu baris yang bisa digeser */
+  .pub-chips{margin:14px -14px 0;padding:2px 14px;gap:7px;flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);}
+  .pub-chips::-webkit-scrollbar{display:none;}
+  .pub-chip{flex:none;scroll-snap-align:start;padding:8px 14px;font-size:10px;letter-spacing:.12em;animation-delay:calc(.35s + var(--i,0) * 45ms);}
+
+  /* Search jadi pill putih */
+  .pub-search{padding:14px 0 0;animation-delay:.5s;}
+  .pub-search-inner{background:#fff;border:1px solid var(--pub-line);border-radius:999px;padding:11px 16px;gap:9px;box-shadow:0 1px 2px rgba(14,21,24,.04);}
+  .pub-search-inner::after{display:none;}
+  .pub-search-inner:focus-within{border-color:rgba(14,21,24,.35);}
+  .pub-search-inner input{font-size:12.5px;}
+  .pub-search-count{display:none;}
+
+  /* Grid dua kolom */
+  .pub-grid-wrap{padding:16px 0 44px;}
+  .pub-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+
+  .pub-card{padding:6px;border-radius:20px;border-color:rgba(14,21,24,.05);box-shadow:0 1px 3px rgba(14,21,24,.05), 0 16px 26px -20px rgba(14,21,24,.55);will-change:auto;animation-delay:calc(80ms + min(var(--i,0),9) * 45ms);transition:transform .18s ease, box-shadow .3s;}
+  .pub-card:hover{transform:none;box-shadow:0 1px 3px rgba(14,21,24,.05), 0 16px 26px -20px rgba(14,21,24,.55);}
+  .pub-card:active{transform:scale(.973);}
+  .pub-card-img{border-radius:15px;background:linear-gradient(150deg,#F4F3EE,#E7E7DE);}
+  .pub-card-img::after{display:none;}
+  .pub-card:hover .pub-card-img img{transform:none;}
+  .pub-card-hint{display:none;}
+  .pub-card-cat{top:8px;left:8px;font-size:8.5px;letter-spacing:.06em;padding:4px 8px;border-radius:6px;background:rgba(14,21,24,.85);backdrop-filter:blur(4px);}
+  .pub-card-open{display:inline-flex;position:absolute;right:8px;bottom:8px;z-index:2;width:29px;height:29px;border-radius:50%;background:#fff;color:var(--pub-ink);align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(14,21,24,.2);transition:background .25s, color .25s, transform .3s cubic-bezier(.16,1,.3,1);}
+  .pub-card-open svg{width:13px;height:13px;}
+  .pub-card:active .pub-card-open{background:var(--pub-accent);color:#fff;transform:scale(.88);}
+
+  .pub-card-body{padding:11px 7px 7px;gap:8px;}
+  .pub-card-name{font-size:12px;line-height:1.3;letter-spacing:.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .pub-card:hover .pub-card-name{color:var(--pub-ink);}
+  .pub-card-varwrap,.pub-price-block{display:none;}
+  .pub-card-varchip{display:inline-flex;align-self:flex-start;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--pub-muted);background:var(--pub-frame);border-radius:999px;padding:4px 9px;}
+  .pub-card-varchip i{width:4px;height:4px;border-radius:50%;background:var(--pub-accent);flex:none;}
+
+  .pub-card-mini{display:flex;flex-direction:column;gap:7px;margin-top:auto;}
+  .pub-card-mini .price{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+  .pub-card-mini .now{font-family:var(--font-mono);font-size:15.5px;font-weight:800;letter-spacing:-.02em;color:var(--pub-ink);}
+  .pub-card-mini .was{font-family:var(--font-mono);font-size:9.5px;color:var(--pub-muted);text-decoration:line-through;}
+  .pub-card-best{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:9.5px;color:var(--pub-teal);}
+  .pub-card-best .moq{background:var(--pub-teal-bg);padding:3px 7px;border-radius:5px;font-weight:600;letter-spacing:.02em;}
+
+  .pub-empty{padding:28px 0;font-size:12px;line-height:1.7;}
+
+  /* Footer: brand besar tetap jadi penutup, CTA PDF melebar */
+  .pub-footer{padding:44px 0 34px;}
+  .pub-footer-row{display:block;}
+  .pub-brand-huge{font-size:clamp(46px,17vw,92px);}
+  .pub-footer-meta{min-width:0;font-size:9.5px;letter-spacing:.13em;margin-top:22px;}
+
+  /* Skeleton ikut bentuk kartu mobile */
+  .pub-skel{border-radius:20px;padding:6px;border-color:rgba(14,21,24,.05);}
+  .pub-skel-img{border-radius:15px;}
+  .pub-skel-body{padding:11px 7px 7px;gap:8px;}
+  .pub-skel-line{height:9px;}
+  .pub-skel-line.tall{height:22px;}
+}
+
+/* ---- Detail produk sebagai bottom sheet di layar kecil ---- */
+@media (max-width:819px){
+  .pub-modal{align-items:flex-end;padding:0;background:rgba(14,21,24,.42);}
+  .pub-modal-panel{max-width:none;max-height:92vh;border-radius:26px 26px 0 0;animation:pub-sheet-up .5s cubic-bezier(.16,1,.3,1) both;padding-bottom:max(16px, env(safe-area-inset-bottom));overscroll-behavior:contain;}
+  .pub-modal-panel.dragging{animation:none;transition:none;}
+  .pub-modal-panel.settling{animation:none;transition:transform .32s cubic-bezier(.16,1,.3,1);}
+  .pub-sheet-handle{display:block;position:sticky;top:0;z-index:5;padding:11px 0 7px;background:linear-gradient(#fff 72%, rgba(255,255,255,0));touch-action:none;cursor:grab;}
+  .pub-sheet-handle::before{content:'';display:block;width:38px;height:4px;border-radius:999px;background:rgba(14,21,24,.16);margin:0 auto;}
+  .pub-modal-close{top:9px;right:12px;width:32px;height:32px;font-size:13px;}
+  .pub-modal-media{margin:2px 12px 0;border-radius:18px;}
+  .pub-modal-info{padding:18px 18px 10px;gap:14px;}
+  .pub-modal-headline .now{font-size:26px;}
+}
 
 /* ---- Print stylesheet untuk PDF download ----
    Target: 9 produk (3 x 3) per halaman A4. Tinggi baris dikunci lewat
@@ -257,7 +397,7 @@
   .pub-grid{display:grid;grid-template-columns:repeat(3,1fr) !important;grid-auto-rows:80mm;gap:4mm !important;}
   .pub-card{height:100%;overflow:hidden;break-inside:avoid;page-break-inside:avoid;cursor:default;box-shadow:none !important;border:.3mm solid #DDDCD3;border-radius:2mm;}
   .pub-card-img{aspect-ratio:auto !important;height:34mm;border-bottom:.3mm solid #EBEBE4;}
-  .pub-card-img img{object-fit:cover;}
+  .pub-card-img img{object-fit:cover;opacity:1 !important;transform:none !important;}
   .pub-card-img::after{display:none !important;}
   .pub-card-noimg svg{width:8mm;height:8mm;}
   .pub-card-noimg span{font-size:5.5pt;}

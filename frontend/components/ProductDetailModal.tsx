@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Product } from '@/lib/types';
 import { fmtRupiah } from '@/lib/api';
 import { parseVariants, variantUnit } from '@/lib/variants';
@@ -21,6 +21,46 @@ export default function ProductDetailModal({ product, onClose, onZoom }: Props) 
     hasBandrol && bandrol
       ? Math.round((1 - (harga_jual ?? 0) / bandrol) * 100)
       : 0;
+
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const dragStart = useRef<number | null>(null);
+
+  /**
+   * Di layar kecil panel tampil sebagai bottom sheet: gagang di atas bisa
+   * ditarik ke bawah untuk menutup, persis kebiasaan sheet di aplikasi.
+   */
+  const onHandleDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    dragStart.current = e.clientY;
+    panel.classList.add('dragging');
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onHandleMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const panel = panelRef.current;
+    if (!panel || dragStart.current === null) return;
+    const dy = Math.max(0, e.clientY - dragStart.current);
+    panel.style.transform = `translateY(${dy}px)`;
+  };
+
+  const onHandleUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const panel = panelRef.current;
+    if (!panel || dragStart.current === null) return;
+    const dy = Math.max(0, e.clientY - dragStart.current);
+    dragStart.current = null;
+    panel.classList.remove('dragging');
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    if (dy > 110) {
+      panel.classList.add('settling');
+      panel.style.transform = 'translateY(100%)';
+      window.setTimeout(onClose, 220);
+      return;
+    }
+    panel.classList.add('settling');
+    panel.style.transform = 'translateY(0)';
+    window.setTimeout(() => panel.classList.remove('settling'), 340);
+  };
 
   // Esc untuk tutup + kunci scroll body selama modal terbuka
   useEffect(() => {
@@ -46,7 +86,15 @@ export default function ProductDetailModal({ product, onClose, onZoom }: Props) 
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="pub-modal-panel">
+      <div className="pub-modal-panel" ref={panelRef}>
+        <div
+          className="pub-sheet-handle"
+          onPointerDown={onHandleDown}
+          onPointerMove={onHandleMove}
+          onPointerUp={onHandleUp}
+          onPointerCancel={onHandleUp}
+          aria-hidden="true"
+        />
         <button className="pub-modal-close" onClick={onClose} aria-label="Tutup detail">
           ✕
         </button>
@@ -59,7 +107,13 @@ export default function ProductDetailModal({ product, onClose, onZoom }: Props) 
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={image} alt={name} />
-              <span className="pub-modal-zoomhint">Klik gambar untuk perbesar</span>
+              <span className="pub-modal-zoomhint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-3.6-3.6M11 8.5v5M8.5 11h5" />
+                </svg>
+                Perbesar
+              </span>
             </>
           ) : (
             <div className="pub-card-noimg">
@@ -97,7 +151,11 @@ export default function ProductDetailModal({ product, onClose, onZoom }: Props) 
               </h3>
               <ul className="pub-var-chips">
                 {items.map((v, i) => (
-                  <li key={i} className="pub-var-chip">
+                  <li
+                    key={i}
+                    className="pub-var-chip"
+                    style={{ ['--i' as string]: i } as React.CSSProperties}
+                  >
                     {v}
                   </li>
                 ))}
@@ -125,7 +183,7 @@ export default function ProductDetailModal({ product, onClose, onZoom }: Props) 
                     const base = Number(harga_jual ?? 0);
                     const save = base > 0 && g > 0 && g < base ? Math.round((1 - g / base) * 100) : 0;
                     return (
-                      <tr key={i}>
+                      <tr key={i} style={{ ['--i' as string]: i } as React.CSSProperties}>
                         <td>
                           <span className="moq">min {t.moq ?? '-'}</span>
                         </td>
