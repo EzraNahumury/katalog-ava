@@ -10,6 +10,9 @@ namespace App\Core;
  */
 final class Auth
 {
+    /** Umur token default kalau config.php tidak menyebut jwt_ttl. */
+    public const DEFAULT_TTL = 60 * 60 * 24 * 7; // 7 hari
+
     /** Payload user yang sedang login pada request ini (di-set oleh requireAuth). */
     private static ?array $current = null;
 
@@ -22,9 +25,11 @@ final class Auth
     public static function issue(array $claims): string
     {
         $secret = APP_CONFIG['jwt_secret'];
-        $ttl    = APP_CONFIG['jwt_ttl']    ?? 3600;
+        $ttl    = self::ttl();
 
         $now = time();
+        // iat/exp lama (kalau $claims berasal dari payload token) selalu ditimpa
+        unset($claims['iat'], $claims['exp']);
         $payload = array_merge($claims, ['iat' => $now, 'exp' => $now + $ttl]);
 
         $header  = self::b64url(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
@@ -58,22 +63,57 @@ final class Auth
         return $payload;
     }
 
-    /** Cek Authorization header. Kalau invalid → 401 + exit. Return payload. */
+    /** Umur token aktif (detik). */
+    public static function ttl(): int
+    {
+        $ttl = (int)(APP_CONFIG['jwt_ttl'] ?? self::DEFAULT_TTL);
+        return $ttl > 0 ? $ttl : self::DEFAULT_TTL;
+    }
+
+    /**
+     * Cek Authorization header. Kalau invalid → 401 + exit. Return payload.
+     * Respons 401 selalu membawa field "code" supaya frontend bisa membedakan
+     * sesi habis dari error lain tanpa menebak-nebak isi pesan.
+     */
     public static function requireAuth(): array
     {
         $header = $_SERVER['HTTP_AUTHORIZATION']
             ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
             ?? '';
         if (!preg_match('/^Bearer\s+(.+)$/i', $header, $m)) {
-            Response::error('Missing bearer token', 401);
+            Response::error('Missing bearer token', 401, ['code' => 'missing_token']);
         }
+
         try {
             $payload = self::verify($m[1]);
-            self::$current = $payload;
-            return $payload;
         } catch (\Throwable $e) {
-            Response::error('Unauthorized: ' . $e->getMessage(), 401);
+            $msg  = $e->getMessage();
+            $code = $msg === 'Token expired' ? 'token_expired' : 'invalid_token';
+            Response::error('Unauthorized: ' . $msg, 401, ['code' => $code]);
         }
+
+        self::$current = $payload;
+        self::maybeRefresh($payload);
+        return $payload;
+    }
+
+    /**
+     * Sliding session: kalau sisa umur token tinggal di bawah setengah TTL,
+     * terbitkan token baru dan kirim lewat header X-Refresh-Token. Admin yang
+     * masih aktif tidak akan kena "Token expired" di tengah pekerjaan; yang
+     * benar-benar menganggur sampai exp tetap harus login lagi.
+     */
+    private static function maybeRefresh(array $payload): void
+    {
+        $ttl = self::ttl();
+        $exp = (int)($payload['exp'] ?? 0);
+        if ($exp - time() > intdiv($ttl, 2)) {
+            return; // masih segar, tidak perlu token baru
+        }
+        if (headers_sent()) {
+            return;
+        }
+        header('X-Refresh-Token: ' . self::issue($payload));
     }
 
     private static function b64url(string $s): string

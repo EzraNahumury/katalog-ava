@@ -1,6 +1,42 @@
 import type { Product, PriceTier } from './types';
+import { setToken } from './auth';
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
+/**
+ * Semua request admin lewat adminFetch, jadi satu tempat ini cukup untuk
+ * menangani sesi yang habis. Halaman admin mendaftarkan handler-nya saat mount.
+ */
+let unauthorizedHandler: (() => void) | null = null;
+let tokenRefreshHandler: ((token: string) => void) | null = null;
+
+export function setUnauthorizedHandler(fn: (() => void) | null): void {
+  unauthorizedHandler = fn;
+}
+
+/**
+ * Dipanggil ketika backend memperpanjang sesi lewat X-Refresh-Token, supaya
+ * state React ikut memakai token baru (kalau tidak, timer kedaluwarsa di
+ * halaman admin masih memakai umur token lama).
+ */
+export function setTokenRefreshHandler(fn: ((token: string) => void) | null): void {
+  tokenRefreshHandler = fn;
+}
+
+/**
+ * Backend membalas 401 dengan body {"error": "...", "code": "token_expired"},
+ * bukan teks yang memuat "401" — jadi jangan pernah mendeteksi lewat isi pesan
+ * saja. Status HTTP yang ditempelkan jsonOrThrow adalah sumber utamanya.
+ */
+export function isAuthError(e: unknown): boolean {
+  if ((e as { status?: number } | null)?.status === 401) return true;
+  const code = (e as { code?: string } | null)?.code;
+  if (code === 'token_expired' || code === 'invalid_token' || code === 'missing_token') {
+    return true;
+  }
+  const msg = e instanceof Error ? e.message.toLowerCase() : '';
+  return msg.includes('unauthorized') || msg.includes('token expired') || msg.includes('bearer');
+}
 
 export type Category = { id: number; name: string; product_count: number };
 
@@ -60,6 +96,16 @@ async function adminFetch(token: string, path: string, init: RequestInit = {}): 
     headers.set('Content-Type', 'application/json');
   }
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers, cache: 'no-store' });
+
+  // Sliding session: backend mengirim token baru sebelum yang lama kedaluwarsa.
+  const refreshed = res.headers.get('X-Refresh-Token');
+  if (refreshed) {
+    setToken(refreshed);
+    tokenRefreshHandler?.(refreshed);
+  }
+
+  if (res.status === 401) unauthorizedHandler?.();
+
   return res;
 }
 
@@ -68,8 +114,9 @@ async function jsonOrThrow(res: Response): Promise<unknown> {
   if (!res.ok) {
     const err = new Error(
       (data as { error?: string })?.error || `${res.status} ${res.statusText}`
-    ) as Error & { status?: number };
+    ) as Error & { status?: number; code?: string };
     err.status = res.status;
+    err.code = (data as { code?: string })?.code;
     throw err;
   }
   return data;

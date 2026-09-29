@@ -49,6 +49,9 @@ if (in_array('*', $allowed, true) || in_array($origin, $allowed, true)) {
     header('Vary: Origin');
 }
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
+// X-Refresh-Token harus di-expose, kalau tidak JS lintas origin (Vercel → API)
+// tidak bisa membacanya dan sliding session tidak akan pernah jalan.
+header('Access-Control-Expose-Headers: X-Refresh-Token');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Max-Age: 86400');
 

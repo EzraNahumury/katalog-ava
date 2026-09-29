@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Product, PriceTier } from '@/lib/types';
 import {
   createProduct,
@@ -61,8 +61,15 @@ export default function ProductForm({
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Produk sudah terlanjur dibuat tapi langkah berikutnya gagal (mis. sesi
+  // habis saat upload gambar). Simpan id-nya supaya percobaan berikutnya
+  // meng-update baris yang sama, bukan membuat produk kembar.
+  const createdIdRef = useRef<number | null>(null);
 
-  useEffect(() => setForm(initFrom(product)), [product]);
+  useEffect(() => {
+    setForm(initFrom(product));
+    createdIdRef.current = null;
+  }, [product]);
 
   function updateTier(i: number, key: 'moq' | 'harga_grosir', val: string) {
     setForm((f) => {
@@ -98,14 +105,17 @@ export default function ProductForm({
 
       if (!input.name) throw new Error('Nama produk wajib');
 
-      const saved = product
-        ? await updateProduct(token, product.id, input)
+      const existingId = product?.id ?? createdIdRef.current;
+      const saved = existingId
+        ? await updateProduct(token, existingId, input)
         : await createProduct(token, input);
+      if (!product) createdIdRef.current = saved.id;
 
       if (file) {
         await uploadImage(token, saved.id, file);
       }
 
+      createdIdRef.current = null;
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

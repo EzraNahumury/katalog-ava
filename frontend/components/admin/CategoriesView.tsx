@@ -9,9 +9,9 @@ import {
 } from '@/lib/api';
 import { useConfirm, useToast } from '../ui/UIProvider';
 
-type Props = { token: string; onUnauthorized: () => void };
+type Props = { token: string };
 
-export default function CategoriesView({ token, onUnauthorized }: Props) {
+export default function CategoriesView({ token }: Props) {
   const confirm = useConfirm();
   const toast = useToast();
   const [items, setItems] = useState<Category[]>([]);
@@ -26,13 +26,11 @@ export default function CategoriesView({ token, onUnauthorized }: Props) {
     try {
       setItems(await fetchCategories());
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setError(msg);
-      if (msg.includes('401')) onUnauthorized();
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
-  }, [onUnauthorized]);
+  }, []);
 
   useEffect(() => {
     load();

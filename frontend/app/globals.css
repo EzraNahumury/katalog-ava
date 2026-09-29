@@ -627,6 +627,11 @@ button{font-family:inherit;cursor:pointer;}
 .modal-close:hover{color:var(--ink);}
 .modal-footer{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);}
 .modal-footer button{flex:1;}
+
+/* Modal sesi habis — harus di atas modal form yang sedang terbuka */
+.session-backdrop{z-index:120;align-items:center;backdrop-filter:blur(2px);}
+.session-modal{max-width:420px;}
+.session-note{margin:0 0 16px;font-size:13.5px;line-height:1.6;color:var(--muted);}
 .btn-secondary{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;}
 .btn-secondary:hover{background:#EDEEE8;}
 

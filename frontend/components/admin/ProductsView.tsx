@@ -12,9 +12,9 @@ import ProductCard from '../ProductCard';
 import ProductForm from './ProductForm';
 import { useConfirm, useToast } from '../ui/UIProvider';
 
-type Props = { token: string; onUnauthorized: () => void };
+type Props = { token: string };
 
-export default function ProductsView({ token, onUnauthorized }: Props) {
+export default function ProductsView({ token }: Props) {
   const confirm = useConfirm();
   const toast = useToast();
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,15 +34,13 @@ export default function ProductsView({ token, onUnauthorized }: Props) {
       setProducts(p);
       setCategories(c);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setError(msg);
-      if (msg.includes('401') || msg.toLowerCase().includes('unauthorized')) {
-        onUnauthorized();
-      }
+      // 401 ditangani terpusat di lib/api (modal login ulang) — di sini cukup
+      // tampilkan pesannya.
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
-  }, [onUnauthorized]);
+  }, []);
 
   useEffect(() => {
     loadAll();

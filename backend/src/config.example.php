@@ -16,6 +16,9 @@ return [
     // Ganti dengan random string minimal 32 karakter. Contoh:
     //   php -r "echo bin2hex(random_bytes(32));"
     'jwt_secret'   => 'GANTI_DENGAN_RANDOM_STRING_MIN_32_CHAR',
+    // Umur token login. Kalau baris ini tidak ada, backend memakai 7 hari
+    // (Auth::DEFAULT_TTL). Selama admin masih aktif, token otomatis
+    // diperpanjang lewat header X-Refresh-Token sebelum kedaluwarsa.
     'jwt_ttl'      => 60 * 60 * 24 * 7, // 7 hari
 
     // --- CORS ---

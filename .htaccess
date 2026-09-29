@@ -5,6 +5,11 @@ DirectoryIndex index.php
 
 RewriteEngine On
 
+# Teruskan header Authorization ke PHP. Di sebagian konfigurasi Apache/CGI
+# header ini dibuang, dan semua request admin akan balas "Missing bearer token".
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
 # Semua request selain file/direktori nyata → index.php (front controller API)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

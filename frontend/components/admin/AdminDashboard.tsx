@@ -99,9 +99,9 @@ export default function AdminDashboard({ token, onLogout }: Props) {
         </nav>
       </header>
 
-      {view === 'products' && <ProductsView token={token} onUnauthorized={onLogout} />}
-      {view === 'categories' && <CategoriesView token={token} onUnauthorized={onLogout} />}
-      {view === 'users' && <UsersView token={token} onUnauthorized={onLogout} />}
+      {view === 'products' && <ProductsView token={token} />}
+      {view === 'categories' && <CategoriesView token={token} />}
+      {view === 'users' && <UsersView token={token} />}
     </>
   );
 }
