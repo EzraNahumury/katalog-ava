@@ -148,6 +148,39 @@ CREATE TABLE users (
 
 ---
 
+### Migration (perubahan data/skema)
+
+Perubahan data produksi dijalankan lewat runner migration, bukan query manual
+di phpMyAdmin — supaya tercatat dan bisa diulang dengan hasil sama.
+
+```bash
+# dari root repo di server
+php backend/database/migrate.php --status    # lihat yang sudah/belum jalan
+php backend/database/migrate.php --dry-run   # simulasi, tidak menulis apa pun
+php backend/database/migrate.php             # jalankan yang belum
+```
+
+- File migration ada di `backend/database/migrations/`, dieksekusi urut nama file.
+- Yang sudah jalan dicatat di tabel `migrations`, jadi aman dijalankan berkali-kali.
+- Tiap migration dibungkus transaksi: kalau gagal di tengah, otomatis rollback.
+- `migrate.php` hanya jalan dari CLI (dan folder `backend/` sudah diblok dari HTTP),
+  jadi tidak bisa dipicu lewat URL.
+
+Buat migration baru: tambahkan file `YYYY_MM_DD_NNNN_nama.php` yang mengembalikan
+
+```php
+return [
+    'deskripsi' => 'penjelasan singkat',
+    'jalan'     => function (PDO $pdo, callable $log, $dryRun) { /* ... */ },
+];
+```
+
+Di Hostinger, jalankan dari **hPanel → Advanced → SSH/Terminal**. Kalau tidak ada
+akses terminal, bisa lewat **hPanel → Cron Jobs** dengan perintah yang sama
+(jadwalkan sekali, lalu hapus cron-nya).
+
+---
+
 ## 5. Kontrak API (draft)
 
 Base URL: `https://katalogava.com/api`
