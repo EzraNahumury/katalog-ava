@@ -15,6 +15,9 @@ use App\Controllers\ProductController;
 use App\Controllers\CategoryController;
 use App\Controllers\UserController;
 use App\Controllers\UploadController;
+use App\Controllers\MemberController;
+use App\Controllers\PointController;
+use App\Controllers\PortalController;
 
 $router = new Router();
 
@@ -25,6 +28,10 @@ $router->get ('/products/{id}',         [ProductController::class,  'show']);
 $router->get ('/categories',            [CategoryController::class, 'index']);
 $router->get ('/uploads/{file}',        [UploadController::class,   'serve']);
 
+// Halaman pembeli (poin member) — tanpa login akun, dibatasi rate limit
+$router->post('/portal/check',          [PortalController::class,   'check']);
+$router->get ('/portal/me',             [PortalController::class,   'me']);   // token scope member
+
 // Admin (butuh JWT)
 $router->post  ('/products',              [ProductController::class,  'store'],  true);
 $router->put   ('/products/{id}',         [ProductController::class,  'update'], true);
@@ -32,6 +39,18 @@ $router->delete('/products/{id}',         [ProductController::class,  'destroy']
 $router->post  ('/products/{id}/image',   [ProductController::class,  'upload'], true);
 $router->post  ('/categories',            [CategoryController::class, 'store'],  true);
 $router->delete('/categories/{id}',       [CategoryController::class, 'destroy'],true);
+
+// Poin member (kasir/admin)
+$router->get   ('/members',               [MemberController::class,   'index'],     true);
+$router->get   ('/members/birthdays',     [MemberController::class,   'birthdays'], true);
+$router->get   ('/members/{id}',          [MemberController::class,   'show'],      true);
+$router->post  ('/members',               [MemberController::class,   'store'],     true);
+$router->put   ('/members/{id}',          [MemberController::class,   'update'],    true);
+$router->delete('/members/{id}',          [MemberController::class,   'destroy'],   true);
+
+$router->get   ('/transactions',          [PointController::class,    'index'],     true);
+$router->post  ('/transactions',          [PointController::class,    'store'],     true);
+$router->delete('/transactions/{id}',     [PointController::class,    'destroy'],   true);
 
 $router->get   ('/users',                 [UserController::class,     'index'],   true);
 $router->post  ('/users',                 [UserController::class,     'store'],   true);

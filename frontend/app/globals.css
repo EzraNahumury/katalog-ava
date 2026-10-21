@@ -366,6 +366,145 @@
   .pub-modal-headline .now{font-size:26px;}
 }
 
+/* ================================================================
+   POIN MEMBER — layar kasir (di dalam panel admin)
+   ================================================================ */
+.head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.poin-wrap{padding:0 28px 40px;max-width:1400px;margin:0 auto;}
+.poin-empty{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px;color:var(--muted);font-size:14px;line-height:1.7;}
+.field-hint{display:block;margin-top:6px;font-size:12px;color:var(--muted);}
+.btn-link{background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;padding:0 0 0 6px;cursor:pointer;}
+.btn-link:hover{text-decoration:underline;}
+.btn-mini{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 11px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:.15s;}
+.btn-mini:hover{background:#EDEEE8;}
+.btn-mini.danger{color:#B3261E;border-color:#F3C9C5;}
+.btn-mini.danger:hover{background:#FDECEA;}
+.poin-select{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:13.5px;font-weight:600;color:var(--ink);font-family:inherit;}
+
+/* Tabel */
+.poin-table-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto;}
+.poin-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px;}
+.poin-table th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:14px 16px;border-bottom:1px solid var(--line);white-space:nowrap;}
+.poin-table td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top;}
+.poin-table tr:last-child td{border-bottom:none;}
+.poin-table tbody tr:hover{background:#FAFAF7;}
+.poin-table .num{text-align:right;}
+.poin-table th.aksi,.poin-table td.aksi{text-align:right;white-space:nowrap;}
+.poin-table td.aksi{display:table-cell;}
+.poin-table td.aksi button + button{margin-left:6px;}
+.poin-table .nama{font-weight:700;display:block;}
+.poin-table .sub-cell{display:block;font-size:11.5px;color:var(--muted);margin-top:3px;}
+.poin-table .mono,.poin-table .mono-sm{font-family:var(--font-mono);}
+.poin-table .mono-sm{font-size:12px;}
+.poin-badge{display:inline-block;background:var(--teal-bg);color:var(--teal);font-family:var(--font-mono);font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;}
+.poin-badge.big{font-size:14px;padding:6px 14px;}
+.poin-plus{color:var(--teal);font-family:var(--font-mono);font-weight:700;}
+.poin-minus{color:var(--accent);font-family:var(--font-mono);font-weight:700;margin-left:8px;}
+.potongan{color:var(--accent);}
+
+/* Form transaksi */
+.poin-form{display:grid;gap:16px;grid-template-columns:1fr;}
+@media (min-width:1000px){.poin-form{grid-template-columns:1fr 1fr;align-items:start;}
+  .poin-form .ringkas{grid-column:2;grid-row:1 / span 2;position:sticky;top:20px;}}
+.poin-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;}
+.poin-card-title{font-family:var(--font-display);font-size:14px;letter-spacing:.3px;margin:0 0 16px;}
+.poin-input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 14px;font-size:14px;font-family:inherit;color:var(--ink);}
+.poin-input:focus{outline:none;border-color:var(--accent);}
+.poin-pick{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;}
+.poin-pick button{width:100%;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;transition:.15s;}
+.poin-pick button:hover{border-color:var(--accent);background:#fff;}
+.poin-pick .nama{font-weight:700;font-size:13.5px;flex:1;}
+.poin-pick .mono-sm{font-family:var(--font-mono);font-size:12px;color:var(--muted);}
+.poin-pick .kosong{color:var(--muted);font-size:13px;padding:8px 2px;}
+.poin-selected{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;flex-wrap:wrap;}
+.poin-selected .nama{font-weight:700;font-size:15px;}
+.poin-selected .mono-sm{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);margin-top:2px;}
+.poin-selected .saldo{display:flex;align-items:center;gap:10px;}
+
+.ringkas-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;color:var(--muted);}
+.ringkas-row b{color:var(--ink);font-family:var(--font-mono);font-size:14px;}
+.ringkas-row.total{border-bottom:2px solid var(--line);padding:14px 0;}
+.ringkas-row.total b{font-size:22px;font-weight:800;}
+.ringkas-row b.poin{color:var(--teal);}
+.ringkas-row b.potongan{color:var(--accent);}
+.poin-card.ringkas .btn-primary{margin-top:18px;}
+.poin-card.sukses{margin-top:16px;border-color:var(--teal);}
+.poin-card.sukses p{font-size:14px;line-height:1.7;margin:0 0 14px;}
+
+/* Ulang tahun */
+.ultah-list{list-style:none;margin:0;padding:0;display:grid;gap:10px;}
+.ultah-item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);flex-wrap:wrap;}
+.ultah-item.hari-ini{border-color:var(--accent);background:var(--amber-bg);}
+.ultah-item .tanggal{width:52px;height:52px;border-radius:12px;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;}
+.ultah-item.hari-ini .tanggal{background:var(--accent);}
+.ultah-item .tanggal .angka{font-family:var(--font-display);font-size:19px;line-height:1;}
+.ultah-item .tanggal .bulan{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px;opacity:.85;}
+.ultah-item .info{flex:1;min-width:140px;}
+.ultah-item .nama{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ultah-item .mono-sm{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);margin-top:3px;}
+.tag-hariini{background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;}
+.ultah-item .aksi{display:flex;align-items:center;gap:10px;}
+.btn-wa{background:#25D366;color:#fff;border:none;border-radius:9px;padding:9px 15px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;transition:.15s;}
+.btn-wa:hover{background:#1FB356;}
+
+@media (max-width:640px){
+  .poin-wrap{padding:0 16px 32px;}
+  .head-actions{width:100%;}
+  .head-actions .btn-primary,.head-actions .btn-secondary{flex:1;}
+  .poin-table{min-width:560px;}
+}
+
+/* ================================================================
+   POIN MEMBER — halaman pembeli (/poin), dipakai dari HP
+   ================================================================ */
+.poin-page{min-height:100dvh;background:var(--pub-canvas);color:var(--pub-ink);display:flex;flex-direction:column;font-family:var(--font-body);}
+.poin-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:rgba(237,239,236,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(14,21,24,.07);position:sticky;top:0;z-index:5;}
+.poin-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+.poin-logo{width:38px;height:38px;border-radius:50%;overflow:hidden;background:#1E4E4B;flex:none;display:block;}
+.poin-logo img{width:100%;height:100%;object-fit:cover;display:block;}
+.poin-brand-text{display:flex;flex-direction:column;line-height:1.2;font-family:var(--font-mono);}
+.poin-brand-text b{font-size:10.5px;letter-spacing:.13em;}
+.poin-brand-text span{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--pub-muted);}
+.poin-keluar{background:transparent;border:1px solid rgba(14,21,24,.16);border-radius:999px;padding:7px 14px;font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--pub-ink);}
+.poin-main{flex:1;width:100%;max-width:540px;margin:0 auto;padding:20px 16px 36px;}
+.poin-loading{font-family:var(--font-mono);font-size:12px;color:var(--pub-muted);text-align:center;padding:40px 0;}
+
+.poin-login h1{font-family:var(--font-display);font-size:26px;line-height:1.15;margin:8px 0 8px;text-transform:uppercase;}
+.poin-sub{font-size:13.5px;line-height:1.6;color:var(--pub-muted);margin:0 0 20px;}
+.poin-login form{background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 3px rgba(14,21,24,.05), 0 16px 30px -22px rgba(14,21,24,.5);}
+.poin-login label{display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--pub-muted);margin-bottom:8px;}
+.poin-login input{width:100%;border:1px solid var(--pub-line);border-radius:12px;padding:14px 16px;font-size:16px;font-family:var(--font-mono);color:var(--pub-ink);background:#fff;}
+.poin-login input:focus{outline:none;border-color:var(--pub-ink);}
+.poin-login button{width:100%;margin-top:14px;background:var(--pub-accent);color:#fff;border:none;border-radius:12px;padding:15px;font-size:14.5px;font-weight:700;letter-spacing:.01em;transition:.15s;}
+.poin-login button:disabled{opacity:.55;}
+.poin-error{background:#FEECEA;border:1px solid #F6C9C3;color:#B3261E;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:12px;}
+.poin-aturan{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:8px;}
+.poin-aturan li{background:#fff;border-radius:12px;padding:12px 14px;font-size:13px;color:var(--pub-muted);border:1px solid rgba(14,21,24,.05);}
+.poin-aturan b{color:var(--pub-ink);}
+
+.poin-saldo{background:var(--pub-ink);color:#fff;border-radius:22px;padding:24px;text-align:center;}
+.poin-saldo .halo{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.7;}
+.poin-saldo h1{font-family:var(--font-display);font-size:22px;margin:6px 0 18px;text-transform:uppercase;line-height:1.2;}
+.poin-saldo .angka{display:flex;align-items:baseline;justify-content:center;gap:8px;}
+.poin-saldo .angka b{font-family:var(--font-mono);font-size:54px;font-weight:800;line-height:1;letter-spacing:-.03em;}
+.poin-saldo .angka span{font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;}
+.poin-saldo .setara{font-size:12.5px;margin:14px 0 0;opacity:.8;}
+.poin-saldo .setara b{color:#fff;}
+
+.poin-riwayat{margin-top:24px;}
+.poin-riwayat h2{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--pub-muted);margin:0 0 12px;}
+.poin-riwayat ul{list-style:none;margin:0;padding:0;display:grid;gap:9px;}
+.poin-riwayat li{background:#fff;border-radius:14px;padding:13px 15px;border:1px solid rgba(14,21,24,.05);}
+.poin-riwayat .baris-atas{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.poin-riwayat .tanggal{font-family:var(--font-mono);font-size:11px;color:var(--pub-muted);}
+.poin-riwayat .bayar{font-family:var(--font-mono);font-size:15px;font-weight:800;}
+.poin-riwayat .baris-bawah{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px;font-family:var(--font-mono);font-size:11px;}
+.poin-riwayat .tukar{color:var(--pub-accent);}
+.poin-riwayat .dapat{color:var(--pub-teal);margin-left:auto;}
+.poin-kosong{background:#fff;border-radius:14px;padding:18px;font-size:13px;color:var(--pub-muted);text-align:center;}
+.poin-catatan{font-size:12px;color:var(--pub-muted);text-align:center;margin:22px 0 0;line-height:1.6;}
+.poin-footer{text-align:center;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.16em;color:var(--pub-muted);padding:18px 16px 26px;}
+
 /* ---- Print stylesheet untuk PDF download ----
    Target: 9 produk (3 x 3) per halaman A4. Tinggi baris dikunci lewat
    grid-auto-rows supaya tiap halaman selalu memuat tepat 3 baris kartu. */

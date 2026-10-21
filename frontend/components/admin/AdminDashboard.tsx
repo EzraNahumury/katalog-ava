@@ -5,15 +5,30 @@ import Link from 'next/link';
 import ProductsView from './ProductsView';
 import CategoriesView from './CategoriesView';
 import UsersView from './UsersView';
+import MembersView from './poin/MembersView';
+import NewTransactionView from './poin/NewTransactionView';
+import BirthdaysView from './poin/BirthdaysView';
+import HistoryView from './poin/HistoryView';
 
-type View = 'products' | 'categories' | 'users';
+type View =
+  | 'products'
+  | 'categories'
+  | 'users'
+  | 'members'
+  | 'new-tx'
+  | 'birthdays'
+  | 'tx-history';
+
+const VIEW_POIN: View[] = ['members', 'new-tx', 'birthdays', 'tx-history'];
 
 type Props = { token: string; onLogout: () => void };
 
 export default function AdminDashboard({ token, onLogout }: Props) {
   const [view, setView] = useState<View>('products');
   const [masterOpen, setMasterOpen] = useState(false);
+  const [poinOpen, setPoinOpen] = useState(false);
   const masterRef = useRef<HTMLDivElement>(null);
+  const poinRef = useRef<HTMLDivElement>(null);
 
   // Tutup dropdown ketika klik di luar
   useEffect(() => {
@@ -21,12 +36,22 @@ export default function AdminDashboard({ token, onLogout }: Props) {
       if (masterRef.current && !masterRef.current.contains(e.target as Node)) {
         setMasterOpen(false);
       }
+      if (poinRef.current && !poinRef.current.contains(e.target as Node)) {
+        setPoinOpen(false);
+      }
     }
     document.addEventListener('click', onDocClick);
     return () => document.removeEventListener('click', onDocClick);
   }, []);
 
   const isMasterView = view === 'categories' || view === 'users';
+  const isPoinView = VIEW_POIN.includes(view);
+
+  const pilihView = (v: View) => {
+    setView(v);
+    setMasterOpen(false);
+    setPoinOpen(false);
+  };
 
   return (
     <>
@@ -53,10 +78,7 @@ export default function AdminDashboard({ token, onLogout }: Props) {
           <div className="admin-nav-item">
             <button
               className={`admin-nav-btn ${view === 'products' ? 'active' : ''}`}
-              onClick={() => {
-                setView('products');
-                setMasterOpen(false);
-              }}
+              onClick={() => pilihView('products')}
             >
               Produk
             </button>
@@ -77,21 +99,56 @@ export default function AdminDashboard({ token, onLogout }: Props) {
               <div className="admin-submenu">
                 <button
                   className={view === 'categories' ? 'active' : ''}
-                  onClick={() => {
-                    setView('categories');
-                    setMasterOpen(false);
-                  }}
+                  onClick={() => pilihView('categories')}
                 >
                   Kategori
                 </button>
                 <button
                   className={view === 'users' ? 'active' : ''}
-                  onClick={() => {
-                    setView('users');
-                    setMasterOpen(false);
-                  }}
+                  onClick={() => pilihView('users')}
                 >
                   Akun Admin
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div
+            className="admin-nav-item"
+            ref={poinRef}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className={`admin-nav-btn ${isPoinView ? 'active' : ''}`}
+              onClick={() => setPoinOpen((v) => !v)}
+            >
+              Poin Member <span className="caret">▼</span>
+            </button>
+            {poinOpen && (
+              <div className="admin-submenu">
+                <button
+                  className={view === 'members' ? 'active' : ''}
+                  onClick={() => pilihView('members')}
+                >
+                  Pelanggan
+                </button>
+                <button
+                  className={view === 'new-tx' ? 'active' : ''}
+                  onClick={() => pilihView('new-tx')}
+                >
+                  Transaksi Baru
+                </button>
+                <button
+                  className={view === 'birthdays' ? 'active' : ''}
+                  onClick={() => pilihView('birthdays')}
+                >
+                  Ulang Tahun
+                </button>
+                <button
+                  className={view === 'tx-history' ? 'active' : ''}
+                  onClick={() => pilihView('tx-history')}
+                >
+                  Riwayat
                 </button>
               </div>
             )}
@@ -102,6 +159,10 @@ export default function AdminDashboard({ token, onLogout }: Props) {
       {view === 'products' && <ProductsView token={token} />}
       {view === 'categories' && <CategoriesView token={token} />}
       {view === 'users' && <UsersView token={token} />}
+      {view === 'members' && <MembersView token={token} />}
+      {view === 'new-tx' && <NewTransactionView token={token} />}
+      {view === 'birthdays' && <BirthdaysView token={token} />}
+      {view === 'tx-history' && <HistoryView token={token} />}
     </>
   );
 }

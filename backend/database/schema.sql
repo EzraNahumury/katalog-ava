@@ -59,4 +59,51 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `uq_users_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+-- POIN MEMBER
+-- Dibuat juga oleh migration 2026_10_21_0001_poin_member.php.
+-- Saldo poin TIDAK disimpan sebagai kolom: selalu dihitung dari
+-- point_transactions (SUM poin_didapat - SUM poin_dipakai), supaya
+-- menghapus transaksi otomatis mengoreksi saldo.
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `members` (
+  `id`         INT AUTO_INCREMENT PRIMARY KEY,
+  `name`       VARCHAR(120) NOT NULL,
+  `phone`      VARCHAR(20) NOT NULL,          -- selalu bentuk 628xxxxxxxxx
+  `birthdate`  DATE NULL,
+  `address`    TEXT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_members_phone` (`phone`),
+  KEY `idx_members_name` (`name`),
+  KEY `idx_members_birthdate` (`birthdate`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `point_transactions` (
+  `id`            INT AUTO_INCREMENT PRIMARY KEY,
+  `member_id`     INT NOT NULL,
+  `total_belanja` INT NOT NULL,          -- sebelum potongan
+  `poin_dipakai`  INT NOT NULL DEFAULT 0,
+  `potongan`      INT NOT NULL DEFAULT 0,
+  `total_bayar`   INT NOT NULL,          -- total_belanja - potongan
+  `poin_didapat`  INT NOT NULL DEFAULT 0,
+  `catatan`       VARCHAR(255) NULL,
+  `created_by`    VARCHAR(60) NULL,      -- username kasir
+  `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY `idx_tx_member` (`member_id`),
+  KEY `idx_tx_created` (`created_at`),
+  CONSTRAINT `fk_tx_member` FOREIGN KEY (`member_id`)
+    REFERENCES `members` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `portal_attempts` (
+  `id`         INT AUTO_INCREMENT PRIMARY KEY,
+  `ip`         VARCHAR(45) NOT NULL,
+  `phone`      VARCHAR(20) NOT NULL,
+  `success`    TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY `idx_attempt_ip` (`ip`, `created_at`),
+  KEY `idx_attempt_phone` (`phone`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

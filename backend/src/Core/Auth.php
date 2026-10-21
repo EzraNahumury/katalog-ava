@@ -22,10 +22,13 @@ final class Auth
         return self::$current;
     }
 
-    public static function issue(array $claims): string
+    /**
+     * @param int|null $ttl umur token dalam detik; null = pakai jwt_ttl config.
+     */
+    public static function issue(array $claims, $ttl = null): string
     {
         $secret = APP_CONFIG['jwt_secret'];
-        $ttl    = self::ttl();
+        $ttl    = $ttl === null ? self::ttl() : max(60, (int)$ttl);
 
         $now = time();
         // iat/exp lama (kalau $claims berasal dari payload token) selalu ditimpa
@@ -74,8 +77,12 @@ final class Auth
      * Cek Authorization header. Kalau invalid → 401 + exit. Return payload.
      * Respons 401 selalu membawa field "code" supaya frontend bisa membedakan
      * sesi habis dari error lain tanpa menebak-nebak isi pesan.
+     *
+     * $scope memisahkan token kasir/admin dari token pembeli di halaman poin:
+     * token pembeli tidak boleh dipakai di endpoint admin, dan sebaliknya.
+     * Token lama yang terbit sebelum fitur ini dianggap ber-scope "admin".
      */
-    public static function requireAuth(): array
+    public static function requireAuth($scope = 'admin'): array
     {
         $header = $_SERVER['HTTP_AUTHORIZATION']
             ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
@@ -92,6 +99,11 @@ final class Auth
             Response::error('Unauthorized: ' . $msg, 401, ['code' => $code]);
         }
 
+        $scopeToken = isset($payload['scope']) ? $payload['scope'] : 'admin';
+        if ($scopeToken !== $scope) {
+            Response::error('Token tidak berlaku untuk endpoint ini', 403, ['code' => 'wrong_scope']);
+        }
+
         self::$current = $payload;
         self::maybeRefresh($payload);
         return $payload;
@@ -105,15 +117,19 @@ final class Auth
      */
     private static function maybeRefresh(array $payload): void
     {
-        $ttl = self::ttl();
+        $iat = (int)($payload['iat'] ?? 0);
         $exp = (int)($payload['exp'] ?? 0);
+        // Pakai umur asli token ini, supaya token pembeli yang pendek tidak
+        // ikut diperpanjang jadi sepanjang token admin.
+        $ttl = ($iat > 0 && $exp > $iat) ? $exp - $iat : self::ttl();
+
         if ($exp - time() > intdiv($ttl, 2)) {
             return; // masih segar, tidak perlu token baru
         }
         if (headers_sent()) {
             return;
         }
-        header('X-Refresh-Token: ' . self::issue($payload));
+        header('X-Refresh-Token: ' . self::issue($payload, $ttl));
     }
 
     private static function b64url(string $s): string

@@ -205,6 +205,212 @@ export async function deleteUser(token: string, id: number): Promise<void> {
   await jsonOrThrow(res);
 }
 
+// ============================================================
+// Poin Member — kasir/admin
+// ============================================================
+
+export type Member = {
+  id: number;
+  name: string;
+  phone: string;
+  phone_display: string;
+  birthdate: string | null;
+  address: string | null;
+  saldo_poin: number;
+  total_belanja: number;
+  jumlah_transaksi: number;
+  transaksi_terakhir: string | null;
+  created_at?: string;
+  /** Hanya terisi pada GET /members/{id} */
+  transactions?: PointTx[];
+  /** Hanya terisi pada daftar ulang tahun */
+  tanggal_ulang_tahun?: number;
+};
+
+export type MemberInput = {
+  name: string;
+  phone: string;
+  birthdate: string | null;
+  address: string | null;
+};
+
+export type PointTx = {
+  id: number;
+  member_id?: number;
+  member_name?: string;
+  member_phone?: string;
+  member_phone_display?: string;
+  total_belanja: number;
+  poin_dipakai: number;
+  potongan: number;
+  total_bayar: number;
+  poin_didapat: number;
+  catatan: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type TransaksiBaru = {
+  member_id: number;
+  total_belanja: number;
+  poin_dipakai: number;
+  catatan?: string;
+};
+
+export type HasilTransaksi = {
+  id: number;
+  member_id: number;
+  member_name: string;
+  total_belanja: number;
+  poin_dipakai: number;
+  potongan: number;
+  total_bayar: number;
+  poin_didapat: number;
+  saldo_akhir: number;
+};
+
+export async function fetchMembers(token: string, q = ''): Promise<Member[]> {
+  const qs = q.trim() ? `?q=${encodeURIComponent(q.trim())}` : '';
+  const res = await adminFetch(token, `/members${qs}`);
+  return (await jsonOrThrow(res)) as Member[];
+}
+
+export async function fetchMember(token: string, id: number): Promise<Member> {
+  const res = await adminFetch(token, `/members/${id}`);
+  return (await jsonOrThrow(res)) as Member;
+}
+
+export async function createMember(token: string, input: MemberInput): Promise<Member> {
+  const res = await adminFetch(token, '/members', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return (await jsonOrThrow(res)) as Member;
+}
+
+export async function updateMember(token: string, id: number, input: MemberInput): Promise<Member> {
+  const res = await adminFetch(token, `/members/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  });
+  return (await jsonOrThrow(res)) as Member;
+}
+
+export async function deleteMember(token: string, id: number): Promise<void> {
+  const res = await adminFetch(token, `/members/${id}`, { method: 'DELETE' });
+  await jsonOrThrow(res);
+}
+
+export async function fetchBirthdays(
+  token: string,
+  month: number
+): Promise<{ month: number; members: Member[] }> {
+  const res = await adminFetch(token, `/members/birthdays?month=${month}`);
+  return (await jsonOrThrow(res)) as { month: number; members: Member[] };
+}
+
+export async function fetchTransactions(
+  token: string,
+  opts: { memberId?: number; limit?: number } = {}
+): Promise<PointTx[]> {
+  const params = new URLSearchParams();
+  if (opts.memberId) params.set('member_id', String(opts.memberId));
+  if (opts.limit) params.set('limit', String(opts.limit));
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  const res = await adminFetch(token, `/transactions${qs}`);
+  return (await jsonOrThrow(res)) as PointTx[];
+}
+
+export async function createTransaction(token: string, input: TransaksiBaru): Promise<HasilTransaksi> {
+  const res = await adminFetch(token, '/transactions', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return (await jsonOrThrow(res)) as HasilTransaksi;
+}
+
+export async function deleteTransaction(
+  token: string,
+  id: number
+): Promise<{ member_id: number; saldo_akhir: number }> {
+  const res = await adminFetch(token, `/transactions/${id}`, { method: 'DELETE' });
+  return (await jsonOrThrow(res)) as { member_id: number; saldo_akhir: number };
+}
+
+// ============================================================
+// Poin Member — halaman pembeli (tanpa akun)
+// ============================================================
+
+export type PortalMember = { name: string; saldo_poin: number };
+
+export type PortalTx = {
+  total_belanja: number;
+  poin_dipakai: number;
+  potongan: number;
+  total_bayar: number;
+  poin_didapat: number;
+  created_at: string;
+};
+
+/**
+ * Token pembeli sengaja disimpan di sessionStorage, bukan localStorage:
+ * hilang begitu tab ditutup, aman kalau HP-nya dipakai bergantian.
+ */
+const PORTAL_KEY = 'avasport_portal_token';
+
+export function getPortalToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return sessionStorage.getItem(PORTAL_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setPortalToken(token: string): void {
+  try {
+    sessionStorage.setItem(PORTAL_KEY, token);
+  } catch {
+    // mode privat — cukup bertahan di memori halaman
+  }
+}
+
+export function clearPortalToken(): void {
+  try {
+    sessionStorage.removeItem(PORTAL_KEY);
+  } catch {
+    // no-op
+  }
+}
+
+export async function portalCheck(
+  phone: string
+): Promise<{ token: string; member: PortalMember }> {
+  if (!API_BASE) throw new Error('NEXT_PUBLIC_API_URL belum di-set.');
+  const res = await fetch(`${API_BASE}/portal/check`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone }),
+    cache: 'no-store',
+  });
+  const data = (await jsonOrThrow(res)) as { token: string; member: PortalMember };
+  setPortalToken(data.token);
+  return data;
+}
+
+export async function portalMe(
+  token: string
+): Promise<{ member: PortalMember; transactions: PortalTx[] }> {
+  if (!API_BASE) throw new Error('NEXT_PUBLIC_API_URL belum di-set.');
+  // Sengaja tidak lewat adminFetch: token pembeli tidak boleh menyentuh
+  // sesi admin (termasuk penyimpanan token hasil perpanjangan).
+  const res = await fetch(`${API_BASE}/portal/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  return (await jsonOrThrow(res)) as { member: PortalMember; transactions: PortalTx[] };
+}
+
 // ------------ Utils ------------
 
 export function fmtRupiah(n: number | null | undefined): string {

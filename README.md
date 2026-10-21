@@ -181,6 +181,62 @@ akses terminal, bisa lewat **hPanel → Cron Jobs** dengan perintah yang sama
 
 ---
 
+## 4b. Poin Member Avasport
+
+Program poin untuk pembeli yang datang ke toko. Satu aplikasi dengan katalog
+(backend & frontend yang sama), beda halaman.
+
+**Aturan** — belanja Rp10.000 = 1 poin (dibulatkan ke bawah, dihitung dari
+total bayar sesudah potongan); 1 poin = potongan Rp500; poin yang ditukar
+tidak boleh melebihi saldo maupun total belanja. Aturan ini hanya ditulis
+sekali di `backend/src/Core/Points.php`; `frontend/lib/points.ts` adalah
+salinan untuk pratinjau di layar kasir, angka yang disimpan tetap dari backend.
+
+**Saldo poin tidak disimpan sebagai kolom.** Saldo = SUM(poin_didapat) −
+SUM(poin_dipakai) dari `point_transactions`, jadi menghapus transaksi salah
+input otomatis mengoreksi saldo tanpa penyesuaian manual.
+
+### Halaman kasir (butuh login admin)
+
+`/admin` → menu **Poin Member**:
+
+| Menu | Isi |
+|---|---|
+| Pelanggan | tambah/ubah/hapus/cari (nama atau nomor WA), export CSV |
+| Transaksi Baru | pilih pelanggan, isi belanja, tukar poin, pratinjau potongan & sisa poin |
+| Ulang Tahun | pelanggan yang ulang tahun per bulan + tombol kirim ucapan WhatsApp |
+| Riwayat | semua transaksi, bisa dihapus (saldo ikut terkoreksi), export CSV |
+
+Nomor WhatsApp selalu disimpan sebagai `628xxxxxxxxx` (`Core/Phone.php`), jadi
+kasir boleh mengetik `08…`, `+62…`, atau `62…` dan tidak akan ada nomor dobel.
+
+### Halaman pembeli (tanpa akun)
+
+`/poin` — pembeli memasukkan nomor WhatsApp lalu melihat nama, saldo poin, dan
+riwayat belanjanya. Cocok dibuatkan QR code ke `https://<domain>/poin` untuk
+ditempel di kasir.
+
+Pengamanan (tanpa OTP, sesuai permintaan):
+
+- percobaan gagal dibatasi: 8 per nomor dan 30 per IP tiap 15 menit, dicatat di
+  tabel `portal_attempts`;
+- halaman pembeli **tidak pernah** mengirim alamat maupun tanggal lahir;
+- sesudah lolos, pembeli memegang token ber-scope `member` yang hidup 30 menit
+  dan ditolak di semua endpoint admin (dan sebaliknya);
+- token pembeli disimpan di `sessionStorage`, hilang begitu tab ditutup.
+
+Mau lebih ketat tanpa biaya OTP? Set `'portal_require_birthdate' => true` di
+`config.php` — pembeli harus memasukkan tanggal lahir yang cocok.
+
+### Menyalakan di server
+
+```bash
+php backend/database/migrate.php --dry-run
+php backend/database/migrate.php        # membuat 3 tabel di atas
+```
+
+---
+
 ## 5. Kontrak API (draft)
 
 Base URL: `https://katalogava.com/api`
