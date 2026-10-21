@@ -10,6 +10,7 @@ import {
 } from '@/lib/api';
 import ProductCard from '../ProductCard';
 import ProductForm from './ProductForm';
+import { sortCategories } from '@/lib/categories';
 import { useConfirm, useToast } from '../ui/UIProvider';
 
 type Props = { token: string };
@@ -118,8 +119,7 @@ export default function ProductsView({ token }: Props) {
         >
           Semua <span className="n">{products.length}</span>
         </button>
-        {Object.keys(catCounts)
-          .sort()
+        {sortCategories(Object.keys(catCounts))
           .map((cat) => (
             <button
               key={cat}

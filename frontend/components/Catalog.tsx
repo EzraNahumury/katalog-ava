@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Product } from '@/lib/types';
 import { fetchProducts } from '@/lib/api';
+import { sortCategories } from '@/lib/categories';
 import PublicProductCard from './PublicProductCard';
 import ProductDetailModal from './ProductDetailModal';
 import Lightbox from './Lightbox';
@@ -92,7 +93,7 @@ export default function Catalog() {
     return `${products.length} PRODUK · GROSIR & RETAIL`;
   })();
 
-  const catKeys = Object.keys(categories).sort();
+  const catKeys = sortCategories(Object.keys(categories));
 
   // Key untuk memicu re-render + re-animate grid ketika filter berubah
   const gridKey = `${activeCat}::${search}`;
